@@ -11,7 +11,7 @@ namespace Library.Auth
         string MainConnection { get; }
         string JwtSecret { get; }
         string JwtIssuer { get; }
-        string JwtValidAudience { get; }
+        string JwtAudience { get; }
         string JwtValidMinutes { get; }
         string JwtRefreshTokenValidityInDays { get; }
     }

@@ -32,13 +32,13 @@ namespace Library.Auth
         public string JwtIssuer {
             get
             {
-                return this._configuration["JWT:ValidIssuer"];
+                return this._configuration["JWT:Issuer"];
             }
         }
-        public string JwtValidAudience {
+        public string JwtAudience {
             get
             {
-                return this._configuration["JWT:ValidAudience"];
+                return this._configuration["JWT:Audience"];
             }
         }
         public string JwtValidMinutes {

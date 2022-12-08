@@ -16,7 +16,7 @@ namespace Library.Auth
         private readonly IAuthConfigManager _authConfigManager;
         private string JwtSecret;
         private string JwtIssuer;
-        private string JwtValidAudience;
+        private string JwtAudience;
         private string JwtValidMinutes;
         private string JwtRefreshTokenValidityInDays;
 
@@ -26,7 +26,7 @@ namespace Library.Auth
 
             JwtSecret = _authConfigManager.JwtSecret;
             JwtIssuer = _authConfigManager.JwtIssuer;
-            JwtValidAudience= _authConfigManager.JwtValidAudience;
+            JwtAudience = _authConfigManager.JwtAudience;
             JwtValidMinutes= _authConfigManager.JwtValidMinutes;
             JwtRefreshTokenValidityInDays = _authConfigManager.JwtRefreshTokenValidityInDays;
         }
@@ -40,7 +40,7 @@ namespace Library.Auth
 
             var token = new JwtSecurityToken(
                 issuer: JwtIssuer,
-                audience: JwtValidAudience,
+                audience: JwtAudience,
                 expires: DateTime.Now.AddMinutes(tokenValidityInMinutes),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
