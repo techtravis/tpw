@@ -2,9 +2,11 @@ using Library.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Principal;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,18 +56,35 @@ builder.Services.AddAuthentication(options =>
         ValidIssuers = configuration.GetSection("JWT:ValidIssuers").Get<string[]>(),
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
     };
-    options.SecurityTokenValidators.Clear();
-    options.SecurityTokenValidators.Add(new JwtSecurityTokenHandler
-    {
-        MapInboundClaims = false
-    });
-    options.TokenValidationParameters.NameClaimType = "name";
-    options.TokenValidationParameters.RoleClaimType = "role";
+    //options.SecurityTokenValidators.Clear();
+    //options.SecurityTokenValidators.Add(new JwtSecurityTokenHandler
+    //{
+    //    MapInboundClaims = false
+    //});
+    //options.TokenValidationParameters.NameClaimType = "name";
+    //options.TokenValidationParameters.RoleClaimType = "role";
 });
-
-
-
 var app = builder.Build();
+
+//lets make sure our user roles are created when the app starts...
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        var userManager = services.GetRequiredService<UserManager<SecureUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        await Seeder.SeedRolesAsync(userManager, roleManager);
+        await Seeder.SeedRoleClaimsAsync(userManager, roleManager);
+    }
+    catch (Exception ex)
+    {
+        var logger = loggerFactory.CreateLogger<Program>();
+        logger.LogError(ex, "An error occurred seeding the DB.");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

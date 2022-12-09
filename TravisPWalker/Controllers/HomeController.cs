@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
@@ -11,10 +12,10 @@ namespace TravisPWalker.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly UserManager<SecureUser> _userManager;
-        private readonly ITokenService _tokenService;
+        private readonly UserManager<SecureUser> _userManager;        
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
+        private readonly ITokenService _tokenService;
         private readonly ILogger<HomeController> _logger;
 
 
@@ -46,7 +47,7 @@ namespace TravisPWalker.Controllers
         [Authorize]
         public IActionResult Secured()
         {
-            return View();
+            return View(User?.Claims);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -100,10 +101,7 @@ namespace TravisPWalker.Controllers
                         result += "</br>" + str;
                     }
                 }
-
-
             }
-
 
             return result;
         }

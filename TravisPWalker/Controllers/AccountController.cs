@@ -16,7 +16,7 @@ namespace TravisPWalker.Controllers
         private readonly ITokenService _tokenService;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<AccountController> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
 
@@ -25,7 +25,7 @@ namespace TravisPWalker.Controllers
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             ITokenService tokenService,
-            ILogger<HomeController> logger,
+            ILogger<AccountController> logger,
             IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
@@ -61,13 +61,29 @@ namespace TravisPWalker.Controllers
                 {
                     new Claim(ClaimTypes.Name, user.UserName),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    //DOH forgot about NameIdentifier claim that sets the userid and is required for things like _userManager.GetUserAsync(User)  
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 };
 
+                // lets add the claims for the roles the user is in
                 foreach (var userRole in userRoles)
                 {
+                    // the actual role claim
                     authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+
+                    // the claims associated to the role
+                    var role = _roleManager.FindByNameAsync(userRole).Result;
+                    if (role != null)
+                    {
+                        var roleClaims = _roleManager.GetClaimsAsync(role).Result;
+                        foreach (Claim roleClaim in roleClaims)
+                        {
+                            authClaims.Add(roleClaim);
+                        }
+                    }
                 }
 
+                // take all those claims and now wrap it into the token.
                 var token = _tokenService.CreateToken(authClaims);
                 var refreshToken = _tokenService.GenerateRefreshToken();
 
@@ -77,9 +93,9 @@ namespace TravisPWalker.Controllers
                 _ = _userManager.UpdateAsync(user).Result;
 
                 // set the tokens
-                _httpContextAccessor.HttpContext.Session.Set("Token", Encoding.ASCII.GetBytes(new JwtSecurityTokenHandler().WriteToken(token)));
-                _httpContextAccessor.HttpContext.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(refreshToken));
-                _httpContextAccessor.HttpContext.Session.Set("RefreshTokenExpiryTime", Encoding.ASCII.GetBytes(user.RefreshTokenExpiryTime.ToString()));
+                _httpContextAccessor.HttpContext?.Session.Set("Token", Encoding.ASCII.GetBytes(new JwtSecurityTokenHandler().WriteToken(token)));
+                _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(refreshToken));
+                _httpContextAccessor.HttpContext?.Session.Set("RefreshTokenExpiryTime", Encoding.ASCII.GetBytes(user.RefreshTokenExpiryTime.ToString()));
 
                 return Redirect("/Home/SecureLanding");
             }
@@ -100,8 +116,8 @@ namespace TravisPWalker.Controllers
                 user.RefreshToken = null;
                 _ = _userManager.UpdateAsync(user).Result;
 
-                _httpContextAccessor.HttpContext.Session.Set("Token", Encoding.ASCII.GetBytes(""));
-                _httpContextAccessor.HttpContext.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(""));
+                _httpContextAccessor.HttpContext?.Session.Set("Token", Encoding.ASCII.GetBytes(""));
+                _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(""));
             }
 
             if (returnUrl != null)

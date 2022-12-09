@@ -133,6 +133,8 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
+                    // lets give users the basic role upon signup...
+                    await _userManager.AddToRoleAsync(user, Library.Auth.Enumerators.Roles.Basic.ToString());
 
                     var userId = await _userManager.GetUserIdAsync((SecureUser)user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync((SecureUser)user);
@@ -152,7 +154,7 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
                     }
                     else
                     {
-                        await _signInManager.SignInAsync((SecureUser)user, isPersistent: false);
+                        //await _signInManager.SignInAsync((SecureUser)user, isPersistent: false);
                         return LocalRedirect(returnUrl);
                     }
                 }

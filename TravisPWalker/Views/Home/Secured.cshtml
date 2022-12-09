@@ -1,5 +1,29 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using Library.Auth;
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<SecureUser> UserManager
+@model IEnumerable<System.Security.Claims.Claim>
+
 @{
+    ViewData["Title"] = "Secured Page";
 }
+
+    <p>Congrats!  You're logged in as:&nbsp;@User.Identity?.Name</p>
+<table class="table table-sm table-bordered">
+    <tr>
+        <th>Subject</th>
+        <th>Issuer</th>
+        <th>Type</th>
+        <th>Value</th>
+    </tr>
+  
+    @foreach (var claim in Model.OrderBy(x => x.Type))
+    {
+        <tr>
+            <td>@claim.Subject?.Name</td>
+            <td>@claim.Issuer</td>
+            <td>@claim.Type</td>
+            <td>@claim.Value</td>
+        </tr>
+    }
+</table>
+
