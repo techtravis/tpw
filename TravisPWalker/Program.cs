@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Principal;
 using System.Text;
 
@@ -56,13 +57,6 @@ builder.Services.AddAuthentication(options =>
         ValidIssuers = configuration.GetSection("JWT:ValidIssuers").Get<string[]>(),
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
     };
-    //options.SecurityTokenValidators.Clear();
-    //options.SecurityTokenValidators.Add(new JwtSecurityTokenHandler
-    //{
-    //    MapInboundClaims = false
-    //});
-    //options.TokenValidationParameters.NameClaimType = "name";
-    //options.TokenValidationParameters.RoleClaimType = "role";
 });
 var app = builder.Build();
 
@@ -89,12 +83,12 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseDeveloperExceptionPage();
     app.UseMigrationsEndPoint();
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -113,17 +107,39 @@ app.Use(async (context, next) =>
     await next();
 });
 
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseRouting();
+app.MapRazorPages();
 
 app.UseAuthentication();
+app.UseRouting();
+// must be between authentication and authorization
+// needed because of jwt auth
+// if we were using cookies it would be as simple as
+// services.ConfigureApplicationCookie(options => options.LoginPath = "pathToLoginPage");
+app.UseStatusCodePages(async context =>
+{
+    var request = context.HttpContext.Request;
+    var response = context.HttpContext.Response;
+    var path = request.Path.Value ?? "";
+
+    if (response.StatusCode == (int)HttpStatusCode.Unauthorized)
+    {
+        response.Redirect("/Account/Login");
+    }
+    else
+    {
+        response.Redirect("/Error");
+    }
+});
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapRazorPages();
+
 
 app.Run();
