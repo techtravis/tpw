@@ -7,9 +7,15 @@
     <p>The site is a work in progress to showcase some of my abilities.<br />
     Too much time was spent working on corporate projects that I neglected to build a few things for myself.</p>
 
-    <p>Security for the site is managed by aspnet identity but utilizes jwt tokens so cross communication between it and the eventual apis, blazor app, ect share the same security easily.<br />
-        The first thing we will implement after the security will be an API that makes calls to insert new records to a table that is then parsed out to an RSS feed and consumed by a LED sign in my house.<br />
-        The code for the led sign and rss feed reader can be found at:  <a target="_github" href="https://github.com/techtravis/ScrollSign">ScrollSign</a>
+    <p>To add some complexity to the authentication process, since you can setup aspnet identity so easy and use cookies.  I decided to still rely on aspnets usermanager, rolemanager, ect.  
+        But the actual authentication is handled via a jwt token.  I created a new class that inherits from IdentityUser called SecureUser that extends the fields available to include 
+        First Name, Last Name, a refresh token, refresh expiration, profile picture ect.  Doing so required that I also scaffold out the entire Identity Pages so that I could change the reference there as well. </p>
+
+
+    <p>The next thing we will implement after the security will be an API that makes calls to insert new records to a table that is then parsed out to an RSS feed and consumed by a LED sign in my house.<br />
+        The code for the led sign and rss feed reader can be found at:  <a target="_github" href="https://github.com/techtravis/ScrollSign">ScrollSign</a> </br>
+        I''ll also add in ckeditor that will be used as a WYSIWYG editor for the home page. With a couple custom plugins to handle some bootstrap formatting and image carousel.
+        The editor will be open to view to standard users.   But they will be unable to save the changes.  You can find that project at <a target="_github" href="https://github.com/techtravis/CKEditor.4.Plugins">CKEditor Plugins</a>
     </p>
     <p>
         Code for this project is public on github:<br />
