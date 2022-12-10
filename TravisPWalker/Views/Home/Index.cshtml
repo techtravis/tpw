@@ -1,8 +1,10 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
+@*<div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>The site is a work in progress to showcase some of my abilities.<br />
     Too much time was spent working on corporate projects that I neglected to build a few things for myself.</p>
@@ -23,4 +25,15 @@
         <a target="_github" href="https://github.com/techtravis/tpw">Direct Github Link</a>
     </p>
     <p>Learn more about me on <a target="_linkedIn" href="https://www.linkedin.com/in/kardsen/">LinkedIn</a></p>
-</div>
+</div>*@
+
+@*load the partial page that is saved during the edit process*@
+@Html.Partial("HomePartial")
+
+@if (@User != null && User.Identity != null && User.Identity.IsAuthenticated == true)
+{
+    <div class="row">
+        <a asp-area="" asp-controller="Home" asp-action="HomeEdit">Edit Page</a>
+    </div>
+    
+}

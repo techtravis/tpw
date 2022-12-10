@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Library.Auth.TableModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -15,9 +16,16 @@ namespace Library.Auth
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
+
+        public DbSet<AspNetUserHomePage> AspNetUserHomePage { get; set; }
+        public DbSet<ImageStore> ImageStore { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<AspNetUserHomePage>().ToTable("AspNetUserHomePage");
+            builder.Entity<ImageStore>().ToTable("ImageStore");
         }
     }
 

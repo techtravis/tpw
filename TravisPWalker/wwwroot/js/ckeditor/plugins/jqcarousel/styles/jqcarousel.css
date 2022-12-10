@@ -1,0 +1,61 @@
+﻿
+section {
+    padding: 100px 0;
+}
+
+/*.btn-primary {
+    border-color: #f05f40;
+    color: #fff;
+    background-color: #f05f40;
+    -webkit-transition: all .35s;
+    -moz-transition: all .35s;
+    transition: all .35s;
+}*/
+
+.btn-slide {
+    border: 0 !important;
+    padding: 2px 4px !important;
+    text-transform: uppercase !important;
+    font-family: 'Open Sans','Helvetica Neue',Arial,sans-serif !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+}
+
+.mr10 {
+    margin-right: 10px !important;
+}
+
+.w100p {
+    width: 100% !important;
+}
+
+.w0 {
+    width: 0 !important;
+}
+
+.h0 {
+    height: 0 !important;
+}
+
+.top15 {
+    top: 15px !important;
+}
+
+.leftcontrol {
+    right: 50% !important;
+    z-index: 1;
+    transform: translateX(50%);
+}
+
+.mt10 {
+    margin-top: 10px !important;
+}
+
+.positionabsolute {
+    position: absolute !important;
+}
+
+
+body {
+    webkit-tap-highlight-color: #222;
+}

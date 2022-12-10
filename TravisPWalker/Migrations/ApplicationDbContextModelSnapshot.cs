@@ -102,6 +102,55 @@ namespace TravisPWalker.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Library.Auth.TableModels.AspNetUserHomePage", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("HomeHtml")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserHomePage", (string)null);
+                });
+
+            modelBuilder.Entity("Library.Auth.TableModels.ImageStore", b =>
+                {
+                    b.Property<string>("ImageId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<byte[]>("Bytes")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Extension")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UploadedBy")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("UploadedOn")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ImageId");
+
+                    b.HasIndex("UploadedBy");
+
+                    b.ToTable("ImageStore", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -235,6 +284,24 @@ namespace TravisPWalker.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Library.Auth.TableModels.AspNetUserHomePage", b =>
+                {
+                    b.HasOne("Library.Auth.SecureUser", "SecureUser")
+                        .WithMany("AspNetUserHomePage")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("SecureUser");
+                });
+
+            modelBuilder.Entity("Library.Auth.TableModels.ImageStore", b =>
+                {
+                    b.HasOne("Library.Auth.SecureUser", "SecureUser")
+                        .WithMany("ImageStores")
+                        .HasForeignKey("UploadedBy");
+
+                    b.Navigation("SecureUser");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -284,6 +351,13 @@ namespace TravisPWalker.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Library.Auth.SecureUser", b =>
+                {
+                    b.Navigation("AspNetUserHomePage");
+
+                    b.Navigation("ImageStores");
                 });
 #pragma warning restore 612, 618
         }

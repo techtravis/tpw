@@ -1,7 +1,9 @@
 ﻿using Library.Auth;
+using Library.Auth.TableModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -17,6 +19,7 @@ namespace TravisPWalker.Controllers
         private readonly IConfiguration _configuration;
         private readonly ITokenService _tokenService;
         private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext _ApplicationDbContext;
 
 
         public HomeController(
@@ -24,19 +27,24 @@ namespace TravisPWalker.Controllers
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             ITokenService tokenService,
-            ILogger<HomeController> logger)
+            ILogger<HomeController> logger,
+            ApplicationDbContext applicationDbContext)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
             _tokenService = tokenService;
             _logger = logger;
+            _ApplicationDbContext= applicationDbContext;
         }
 
 
         public IActionResult Index()
         {
-            return View();
+            var aspNetUserHomePage = _ApplicationDbContext.AspNetUserHomePage.First(p => p.SecureUser == null);
+            HomePageEditViewModel hpvm = new HomePageEditViewModel(aspNetUserHomePage.HomeHtml);
+
+            return View(hpvm);
         }
 
         public IActionResult Privacy()
@@ -121,5 +129,117 @@ namespace TravisPWalker.Controllers
 
             return result;
         }
+
+        public ActionResult HomeEdit()
+        {
+            HomePageEditViewModel model = new HomePageEditViewModel();
+            model.Html = AspNetUserHomePage.GetHtml(_ApplicationDbContext, User);
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public ActionResult HomeEdit(HomePageEditViewModel model)
+        {
+            // write html to the database for the user
+            AspNetUserHomePage.InsertOrUpdate(model.Html, _ApplicationDbContext, User);
+
+            return RedirectToAction("Index");
+        }
+
+        //need to move this to the api once that is setup...
+        [HttpPost]
+        public ActionResult UploadCustomFile()
+        {
+            //if (Request.Files.Count > 0)
+            //{
+            //    try
+            //    {
+            //        //  Get all files from Request object  
+            //        HttpFileCollectionBase files = Request.Files;
+            //        if (files.Count > 0)
+            //        {
+            //            HttpPostedFileBase file = files[0];
+            //            string fname;
+            //            string fullFilePath = "";
+
+            //            // Checking for Internet Explorer  
+            //            if (Request.Browser.Browser.ToUpper() == "IE" || Request.Browser.Browser.ToUpper() == "INTERNETEXPLORER")
+            //            {
+            //                string[] testfiles = file.FileName.Split(new char[] { '\\' });
+            //                fname = testfiles[testfiles.Length - 1];
+            //            }
+            //            else
+            //            {
+            //                fname = file.FileName;
+            //            }
+
+            //            string fileExtension = Path.GetExtension(fname);
+            //            fname = $"{Guid.NewGuid()}{fileExtension}";
+
+            //            string clientImageFolder = Server.MapPath("~/Content/Images/uploaded/");
+            //            if (!Directory.Exists(clientImageFolder))
+            //            {
+            //                Directory.CreateDirectory(clientImageFolder);
+            //            }
+            //            fullFilePath = Path.Combine(clientImageFolder, fname);
+            //            file.SaveAs(fullFilePath);
+
+            //            FileUploadResultViewModel uploadResult = new FileUploadResultViewModel
+            //            {
+            //                uploaded = 1,
+            //                fileName = Path.GetFileName(fname),
+            //                url = $"/Home/GetCustomPageImage?filename={Path.GetFileName(fname)}"
+            //            };
+
+            //            // Returns message that successfully uploaded  
+            //            return Json(uploadResult);
+            //        }
+            //        else
+            //        {
+            //            FileUploadResultViewModel uploadResult = new FileUploadResultViewModel
+            //            {
+            //                uploaded = 0,
+            //                fileName = "",
+            //                url = ""
+            //            };
+            //            return Json(uploadResult);
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        FileUploadResultViewModel uploadResult = new FileUploadResultViewModel
+            //        {
+            //            uploaded = 0,
+            //            fileName = "",
+            //            url = ""
+            //        };
+            //        return Json(uploadResult);
+            //    }
+            //}
+            //else
+            //{
+            //    FileUploadResultViewModel uploadResult = new FileUploadResultViewModel
+            //    {
+            //        uploaded = 0,
+            //        fileName = "",
+            //        url = ""
+            //    };
+            //    return Json(uploadResult);
+            //}
+            return null;
+        }
+
+        public FileResult GetCustomPageImage(string filename)
+        {
+            // Get the image from the database table
+
+            //byte[] fileBytes = System.IO.File.ReadAllBytes(fullFilePath);
+            //string openName = fullFilePath.Substring(fullFilePath.Length - 41, 41);
+            //string mimeType = MimeMapping.GetMimeMapping(filename);
+            //return File(fileBytes, mimeType, openName);
+            return null;
+        }
+
     }
 }

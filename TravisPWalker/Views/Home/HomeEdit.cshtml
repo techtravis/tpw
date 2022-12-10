@@ -1,0 +1,88 @@
+﻿@model TravisPWalker.Models.HomePageEditViewModel
+@{
+    ViewBag.Title = "Edit HomePage";
+}
+
+<style src="~/js/ckeditor/contents.css"></style>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="~/js/ckeditor/ckeditor.js"></script>
+<script src="~/js/ckeditor/config.js"></script>
+
+<form name="HomeHtmlEditorForm" style="width:90%;margin-left: 5%;margin-right: 5%;margin-top: 1%;" id="homepageEditForm" action="/Home/HomeEdit" enctype="multipart/form-data" method="post">
+    @Html.TextAreaFor(m => m.Html, new { @class = "form-control editor", @style = "min-height:500px;min-width:1440px;", @id = "e1" })
+
+    <div style="padding-top: 10px;"><button type="submit" value="Publish" name="Publish">Publish</button></div>
+</form>
+
+
+<script>
+
+    CKEDITOR.timestamp = '1a';
+    CKEDITOR.config.height = "75vh";
+    CKEDITOR.config.allowedContent = true;
+
+    CKEDITOR.dtd.a.div = 1;  // needed to allow boostrap tab links to have divs inside of them to make it editable if we choose in the widget
+    // We need to load the javascript files into the editor
+    //https://stackoverflow.com/questions/24048401/how-do-i-allow-the-tabs-of-a-bootstrap-tab-to-work-within-the-ckeditor-editor
+    CKEDITOR.on('instanceReady', function (ev) {
+        var jqScript = document.createElement('script');
+        var bsScript = document.createElement('script');
+        jqScript.src = '../lib/jquery/dist/jquery.js';
+        bsScript.src = '../lib/bootstrap/dist/js/bootstrap.js';
+
+        var editorHead = ev.editor.document.$.head;
+        editorHead.appendChild(jqScript);
+        editorHead.appendChild(bsScript);
+    });
+
+    var wysiwygareaAvailable = isWysiwygareaAvailable(),
+        isBBCodeBuiltIn = !!CKEDITOR.plugins.get('bbcode');
+
+
+    function InitWYSIWYG() {
+
+        var editors = $('.editor');
+        for (let e = 0; e < editors.length; e++) {
+            let elementId = $($('.editor')[e]).attr('id');
+            console.log('Initializing WYSIWYG for ' + elementId);
+            try {
+                if ($('#' + elementId).is('[readonly]')) {
+                    CKEDITOR.replace(elementId, {
+                        toolbar: [],
+                    });
+                }
+                else {
+                    CKEDITOR.replace(elementId, {
+
+                    });
+                }
+            }
+            catch (ex) {
+                console.log(ex);
+            }
+        }
+
+    };
+
+
+    function isWysiwygareaAvailable() {
+        // If in development mode, then the wysiwygarea must be available.
+        // Split REV into two strings so builder does not replace it :D.
+        if (CKEDITOR.revision == ('%RE' + 'V%')) {
+            return true;
+        }
+
+        return !!CKEDITOR.plugins.get('wysiwygarea');
+    }
+
+    $(document).ready(() => {
+        console.log('Initializing WYSIWYG');
+        InitWYSIWYG();
+    });
+
+
+</script>
