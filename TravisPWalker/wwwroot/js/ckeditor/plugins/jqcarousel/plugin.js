@@ -15,7 +15,7 @@
             CKEDITOR.scriptLoader.load('../lib/jquery-easing/dist/jquery.easing.min.js');
             CKEDITOR.scriptLoader.load('../lib/jquery-fittext/dist/jquery.fittext.js');
             CKEDITOR.scriptLoader.load('../js/wow.min.js');
-
+            debugger
             CKEDITOR.scriptLoader.load(CKEDITOR.getUrl(pluginPath + 'lib/helper.js'));
 
             editor.addContentsCss(this.path + 'styles/jqcarousel.css');
@@ -55,16 +55,10 @@
                             '            <div class="carousel-item carousel-1 active" data-bs-slide-index="0">' +
 
                             '                <img src="../images/space.jpeg" alt="..." class="w100p">' +
-                            '                <div class="carousel-caption"> ' +
-                            //'                    Slider 1 Caption' +
-                            '                </div>' +
                             '            </div>' +
                             '            <div class="carousel-item carousel-1" data-bs-slide-index="1">' +
 
                             '                <img src="../images/field.jpeg" alt="..." class="w100p">' +
-                            '                <div class="carousel-caption"> ' +
-                            //'                    Slider 2 Caption' +
-                            '                </div>' +
                             '            </div>' +
                             '        </div>' +
                             '        <div class="ImageUpdate" carouselid="" slideindex=""><div>' +

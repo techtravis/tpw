@@ -117,8 +117,7 @@ var addEditControls = function () {
             this function is triggered when user click image upload button
             it opens the file browsing window to select image.
             */
-            carousel.on('click', '[data-action="upload-image-' + carouselID + '"]', function () {
-                debugger
+            carousel.on('click', '[data-action="upload-image-' + carouselID + '"]', function () {                
                 var that = this;
                 var carouselID = that.getAttribute("data-id");
                 var carousel = $(CKEDITOR.instances.e1.window.getFrame().$).contents().find('#' + carouselID);
@@ -147,6 +146,17 @@ var addEditControls = function () {
 
                 carousel.find('.carousel-inner .carousel-item.' + carouselID + ':first-child').addClass('active');
                 carousel.find('.carousel-indicators li:first-child').addClass('active');
+                
+                //  handle reindexing (data-bs-slide-to)
+                var indicators = carousel.find('.carousel-indicators li');
+                for (let i = 0; i < indicators.length; i++) {
+                    indicators[i].setAttribute('data-bs-slide-to', i.toString());
+                }
+                //  handle reindexing (data-bs-slide-index)
+                var slides = carousel.find('.carousel-item');
+                for (let i = 0; i < slides.length; i++) {
+                    slides[i].setAttribute('data-bs-slide-index', i.toString());
+                }
             });
 
         }

@@ -169,9 +169,9 @@ namespace TravisPWalker.Controllers
 
                 FileUploadResultViewModel uploadResult = new FileUploadResultViewModel
                 {
-                    Uploaded = String.IsNullOrEmpty(newFileID)?0:1,
-                    FileId = newFileID,
-                    Url = String.IsNullOrEmpty(newFileID)?"":$"/Home/GetImage?imageId={newFileID}"
+                    uploaded = String.IsNullOrEmpty(newFileID)?0:1,
+                    fileName = newFileID,
+                    url = String.IsNullOrEmpty(newFileID)?"":$"/Home/GetImage?imageId={newFileID}"
                 };
                 return Json(uploadResult);
             }
@@ -179,9 +179,9 @@ namespace TravisPWalker.Controllers
             {
                 FileUploadResultViewModel uploadResult = new FileUploadResultViewModel
                 {
-                    Uploaded = 0,
-                    FileId = "",
-                    Url = ""
+                    uploaded = 0,
+                    fileName = "",
+                    url = ""
                 };
                 return Json(uploadResult);
             }

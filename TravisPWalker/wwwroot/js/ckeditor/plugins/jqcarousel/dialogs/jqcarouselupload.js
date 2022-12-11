@@ -1,5 +1,5 @@
 ﻿CKEDITOR.dialog.add('jqcarouselupload', function (editor) {
-    function clearSlideUploadIdentifier() {
+    function clearSlideUploadIdentifier() {        
         var slideUpload = $(CKEDITOR.instances.e1.window.getFrame().$).contents().find('.ImageUpdate');
         for (let i = 0; i < slideUpload.length; i++) {
             carouselId = slideUpload[i].setAttribute('carouselid', "");
@@ -17,7 +17,7 @@
         minWidth: 200,
         minHeight: 100,
         init: function () {
-            debugger
+            
         },
         onShow: function () {
             //debugger;
@@ -30,7 +30,7 @@
                     slideIndex = slideUpload[i].getAttribute('slideindex');
                 }
             }
-            debugger
+            
             if (command == 'jqcarouselupload') {
 
             }
@@ -58,8 +58,7 @@
                     {
                         type: 'text',
                         id: 'fileUrl',
-                        onChange: function () {
-                            debugger
+                        onChange: function () {                            
                             newUrl = this.getValue();     
                             if (newUrl != "") {
                                 var slides = $(CKEDITOR.instances.e1.window.getFrame().$).contents().find('.carousel-item.' + carouselId);
