@@ -2,9 +2,9 @@
 {
     public class FileUploadResultViewModel
     {
-        public Int32 uploaded { get; set; } = 0;
-        public string url { get; set; }
+        public Int32 Uploaded { get; set; } = 0;
+        public string Url { get; set; }
 
-        public string fileName { get; set; }
+        public string FileId { get; set; }
     }
 }

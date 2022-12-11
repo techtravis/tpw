@@ -46,5 +46,5 @@ CKEDITOR.editorConfig = function( config ) {
 		'../lib/bootstrap/dist/css/bootstrap.css'
 	];
 
-	config.filebrowserUploadUrl = '/Home/UploadCustomFile';
+	config.filebrowserUploadUrl = '/Home/UploadImage';
 };

@@ -19,8 +19,8 @@ namespace Library.Auth
         public DateTime RefreshTokenExpiryTime { get; set; }
 
         // these ICollections are needed in order to create the foreign keys for the below tables
-        public ICollection<ImageStore> ImageStores { get; set; }
-        public ICollection<AspNetUserHomePage> AspNetUserHomePage { get; set; }
+        public ICollection<ImageStore>? ImageStores { get; set; }
+        public ICollection<AspNetUserHomePage>? AspNetUserHomePage { get; set; }
 
         //public static bool CanDoX(this IPrincipal principal)
         //{

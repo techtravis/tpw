@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
+using System.Xml.Linq;
 using TravisPWalker.Models;
 
 namespace TravisPWalker.Controllers
@@ -147,98 +148,58 @@ namespace TravisPWalker.Controllers
             return RedirectToAction("Index");
         }
 
-        //need to move this to the api once that is setup...
-        [HttpPost]
-        public ActionResult UploadCustomFile()
+        private async Task<byte[]> GetByteArrayFromImageAsync(IFormFile file)
         {
-            //if (Request.Files.Count > 0)
-            //{
-            //    try
-            //    {
-            //        //  Get all files from Request object  
-            //        HttpFileCollectionBase files = Request.Files;
-            //        if (files.Count > 0)
-            //        {
-            //            HttpPostedFileBase file = files[0];
-            //            string fname;
-            //            string fullFilePath = "";
-
-            //            // Checking for Internet Explorer  
-            //            if (Request.Browser.Browser.ToUpper() == "IE" || Request.Browser.Browser.ToUpper() == "INTERNETEXPLORER")
-            //            {
-            //                string[] testfiles = file.FileName.Split(new char[] { '\\' });
-            //                fname = testfiles[testfiles.Length - 1];
-            //            }
-            //            else
-            //            {
-            //                fname = file.FileName;
-            //            }
-
-            //            string fileExtension = Path.GetExtension(fname);
-            //            fname = $"{Guid.NewGuid()}{fileExtension}";
-
-            //            string clientImageFolder = Server.MapPath("~/Content/Images/uploaded/");
-            //            if (!Directory.Exists(clientImageFolder))
-            //            {
-            //                Directory.CreateDirectory(clientImageFolder);
-            //            }
-            //            fullFilePath = Path.Combine(clientImageFolder, fname);
-            //            file.SaveAs(fullFilePath);
-
-            //            FileUploadResultViewModel uploadResult = new FileUploadResultViewModel
-            //            {
-            //                uploaded = 1,
-            //                fileName = Path.GetFileName(fname),
-            //                url = $"/Home/GetCustomPageImage?filename={Path.GetFileName(fname)}"
-            //            };
-
-            //            // Returns message that successfully uploaded  
-            //            return Json(uploadResult);
-            //        }
-            //        else
-            //        {
-            //            FileUploadResultViewModel uploadResult = new FileUploadResultViewModel
-            //            {
-            //                uploaded = 0,
-            //                fileName = "",
-            //                url = ""
-            //            };
-            //            return Json(uploadResult);
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        FileUploadResultViewModel uploadResult = new FileUploadResultViewModel
-            //        {
-            //            uploaded = 0,
-            //            fileName = "",
-            //            url = ""
-            //        };
-            //        return Json(uploadResult);
-            //    }
-            //}
-            //else
-            //{
-            //    FileUploadResultViewModel uploadResult = new FileUploadResultViewModel
-            //    {
-            //        uploaded = 0,
-            //        fileName = "",
-            //        url = ""
-            //    };
-            //    return Json(uploadResult);
-            //}
-            return null;
+            using (var target = new MemoryStream())
+            {
+                await file.CopyToAsync(target);
+                return target.ToArray();
+            }
         }
 
-        public FileResult GetCustomPageImage(string filename)
+        //need to move this to the api once that is setup...
+        [HttpPost]
+        public ActionResult UploadImage()
         {
-            // Get the image from the database table
+            var files = Request.Form.Files;
+            if(files.Count > 0)
+            {
+                var file = files[0];
+                string newFileID = ImageStore.InsertAndProvideId(_ApplicationDbContext, User, _userManager, file);
 
-            //byte[] fileBytes = System.IO.File.ReadAllBytes(fullFilePath);
-            //string openName = fullFilePath.Substring(fullFilePath.Length - 41, 41);
-            //string mimeType = MimeMapping.GetMimeMapping(filename);
-            //return File(fileBytes, mimeType, openName);
-            return null;
+                FileUploadResultViewModel uploadResult = new FileUploadResultViewModel
+                {
+                    Uploaded = String.IsNullOrEmpty(newFileID)?0:1,
+                    FileId = newFileID,
+                    Url = String.IsNullOrEmpty(newFileID)?"":$"/Home/GetImage?imageId={newFileID}"
+                };
+                return Json(uploadResult);
+            }
+            else
+            {
+                FileUploadResultViewModel uploadResult = new FileUploadResultViewModel
+                {
+                    Uploaded = 0,
+                    FileId = "",
+                    Url = ""
+                };
+                return Json(uploadResult);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public FileResult GetImage(string imageId)
+        {
+            ImageStore? image = ImageStore.GetImage(_ApplicationDbContext, imageId);
+            if(image != null)
+            {
+                return File(image.Bytes, image.MimeType, $"{image.Name}{image.Extension}");
+            }
+            else
+            {
+                return null;
+            }            
         }
 
     }
