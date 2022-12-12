@@ -3,10 +3,13 @@ using Library.Auth.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 
 namespace TravisPWalker.Controllers
 {
@@ -50,7 +53,7 @@ namespace TravisPWalker.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult Login(LoginModel userModel)
+        public IActionResult Login2(LoginModel userModel)
         {
             var user = _userManager.FindByNameAsync(userModel.UserName).Result;
             if (user != null && _userManager.CheckPasswordAsync(user, userModel.Password).Result)
@@ -99,6 +102,41 @@ namespace TravisPWalker.Controllers
 
                 return Redirect("/Home/SecureLanding");
             }
+            return Unauthorized();
+        }
+
+        // Say instead of using the library to get the jwt token, we could call the API and login via it.
+        // lets go ahead and make this our primary method for demonstration
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult Login(LoginModel userModel)
+        {
+            if(userModel.UserName != null && userModel.Password != null)
+            {
+                HttpClient client = new HttpClient();
+
+                string apiUrl = _configuration.GetValue<string>("URLS:api");
+                string usermodel = JsonSerializer.Serialize(userModel);
+                byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(usermodel);
+                var content = new ByteArrayContent(messageBytes);
+                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                var response = client.PostAsync($"{apiUrl}/api/Authenticate/login", content).Result;
+                string result;
+                if (response.IsSuccessStatusCode)
+                {
+                    result = response.Content.ReadAsStringAsync().Result;
+                    Models.TokenViewModel? token = JsonSerializer.Deserialize<Models.TokenViewModel>(result);
+                    if(token != null)
+                    {
+                        _httpContextAccessor.HttpContext?.Session.Set("Token", Encoding.ASCII.GetBytes(token.token));
+                        _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(token.refreshToken));
+                        _httpContextAccessor.HttpContext?.Session.Set("RefreshTokenExpiryTime", Encoding.ASCII.GetBytes(token.expiration));
+                        return Redirect("/Home/SecureLanding");
+                    }                    
+                }                
+            }            
+
             return Unauthorized();
         }
 

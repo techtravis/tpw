@@ -38,21 +38,38 @@ namespace api.travispwalker.Controllers
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
             var user = await _userManager.FindByNameAsync(model.UserName);
+
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                var userRoles = await _userManager.GetRolesAsync(user);
+                var userRoles = _userManager.GetRolesAsync(user).Result;
 
                 var authClaims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.UserName),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    //DOH forgot about NameIdentifier claim that sets the userid and is required for things like _userManager.GetUserAsync(User)  
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 };
 
+                // lets add the claims for the roles the user is in
                 foreach (var userRole in userRoles)
                 {
+                    // the actual role claim
                     authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+
+                    // the claims associated to the role
+                    var role = _roleManager.FindByNameAsync(userRole).Result;
+                    if (role != null)
+                    {
+                        var roleClaims = _roleManager.GetClaimsAsync(role).Result;
+                        foreach (Claim roleClaim in roleClaims)
+                        {
+                            authClaims.Add(roleClaim);
+                        }
+                    }
                 }
 
+                // take all those claims and now wrap it into the token.
                 var token = _tokenService.CreateToken(authClaims);
                 var refreshToken = _tokenService.GenerateRefreshToken();
 
