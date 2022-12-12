@@ -148,13 +148,12 @@ namespace TravisPWalker.Controllers
             return RedirectToAction("Index");
         }
 
-        private async Task<byte[]> GetByteArrayFromImageAsync(IFormFile file)
+        [Authorize]
+        [HttpGet]
+        public ActionResult Swagger()
         {
-            using (var target = new MemoryStream())
-            {
-                await file.CopyToAsync(target);
-                return target.ToArray();
-            }
+            string swaggerUrl = _configuration.GetValue<string>("URLS:apiswagger");
+            return Redirect(swaggerUrl);
         }
 
         //need to move this to the api once that is setup...
