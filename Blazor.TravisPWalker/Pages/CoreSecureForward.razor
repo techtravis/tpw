@@ -1,0 +1,60 @@
+﻿@page "/coresecured"
+@using Blazor.TravisPWalker.Authentication
+@using System.Text
+@using System.Text.Json
+@using Library.Database.Auth
+@using Library.Database.Auth.Models
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+@inject IConfiguration _configuration
+
+
+<div class="container h-100">
+    <div class="d-flex justify-content-md-center align-items-center vh-100">
+        <img src="images/Loading_2.gif" />
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    protected override async Task<Task> OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await authenticationState;
+            if (authState.User.Identity?.Name != null)
+            {
+                var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
+                TokenViewModel tvm = await blzrAuthStateProvider.GetUserSessionAsync();
+                string coreUrl = _configuration.GetValue<string>("URLS:core");
+                UserToken userToken = new UserToken() { AccessToken = tvm.accessToken, RefreshToken = tvm.refreshToken, Audience = coreUrl };
+
+                HttpClient client = new HttpClient();
+
+                string apiUrl = _configuration.GetValue<string>("URLS:api");
+                string usermodel = JsonSerializer.Serialize(userToken);
+                byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(usermodel);
+                var content = new ByteArrayContent(messageBytes);
+                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                var response = client.PostAsync($"{apiUrl}/api/Authenticate/refresh-token", content).Result;
+                string result = "";
+                if (response.IsSuccessStatusCode)
+                {
+                    result = response.Content.ReadAsStringAsync().Result;
+                }
+
+                navManager.NavigateTo($"{coreUrl}/Account/TokenAccess?token={result}&redirectURL=");
+                return base.OnAfterRenderAsync(firstRender);
+            }
+            return base.OnAfterRenderAsync(firstRender);
+        }
+        return base.OnAfterRenderAsync(firstRender);
+
+
+
+    }
+
+}

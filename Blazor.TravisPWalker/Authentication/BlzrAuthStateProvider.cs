@@ -31,7 +31,7 @@ namespace Blazor.TravisPWalker.Authentication
                 }
 
                 // Feel like this should use the token service.. will circle back
-                var claimsPrincipal = _tokenService.GetPrincipalFromToken(userSession.accessToken);
+                var claimsPrincipal = _tokenService.GetPrincipalFromToken(userSession.accessToken);                
                 var state = new AuthenticationState(claimsPrincipal == null ? new ClaimsPrincipal() : claimsPrincipal);
                 NotifyAuthenticationStateChanged(Task.FromResult(state));
                 return state;
@@ -39,6 +39,26 @@ namespace Blazor.TravisPWalker.Authentication
             catch
             {
                 return await Task.FromResult(new AuthenticationState(_anonymous));
+            }
+        }
+
+        public async Task<TokenViewModel> GetUserSessionAsync()
+        {
+            try
+            {
+                var userSessionStorageResult = await _sessionStorage.GetAsync<TokenViewModel>("UserSession");
+                var userSession = userSessionStorageResult.Success ? userSessionStorageResult.Value : null;
+                // if not logged in set to anonymous
+                if (userSession == null)
+                {
+                    return await Task.FromResult(new TokenViewModel());
+                }
+
+                return await Task.FromResult(userSession);
+            }
+            catch
+            {
+                return await Task.FromResult(new TokenViewModel());
             }
         }
 

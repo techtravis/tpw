@@ -3,8 +3,10 @@ using Library.Database.Auth.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -51,60 +53,28 @@ namespace TravisPWalker.Controllers
             return View();
         }
 
-        //[AllowAnonymous]
-        //[HttpPost]
-        //public IActionResult Login2(LoginModel userModel)
-        //{
-        //    var user = _userManager.FindByNameAsync(userModel.UserName).Result;
-        //    if (user != null && _userManager.CheckPasswordAsync(user, userModel.Password).Result)
-        //    {
-        //        var userRoles = _userManager.GetRolesAsync(user).Result;
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult TokenAccess(string token, string redirectURL)
+        {
+            TokenViewModel? tokenModel = JsonSerializer.Deserialize<TokenViewModel>(token);
+            if (tokenModel != null)
+            {
+                if (token != null)
+                {
+                    _httpContextAccessor.HttpContext?.Session.Set("AccessToken", Encoding.ASCII.GetBytes(tokenModel.accessToken));
+                    _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(tokenModel.refreshToken));
+                    _httpContextAccessor.HttpContext?.Session.Set("RefreshTokenExpiryTime", Encoding.ASCII.GetBytes(tokenModel.expiration));
 
-        //        var authClaims = new List<Claim>
-        //        {
-        //            new Claim(ClaimTypes.Name, user.UserName),
-        //            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        //            //DOH forgot about NameIdentifier claim that sets the userid and is required for things like _userManager.GetUserAsync(User)  
-        //            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        //        };
+                    if (String.IsNullOrEmpty(redirectURL))
+                    {
+                        return Redirect("/Home/SecureLanding");
+                    }                 
+                }
+            }
 
-        //        // lets add the claims for the roles the user is in
-        //        foreach (var userRole in userRoles)
-        //        {
-        //            // the actual role claim
-        //            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-
-        //            // the claims associated to the role
-        //            var role = _roleManager.FindByNameAsync(userRole).Result;
-        //            if (role != null)
-        //            {
-        //                var roleClaims = _roleManager.GetClaimsAsync(role).Result;
-        //                foreach (Claim roleClaim in roleClaims)
-        //                {
-        //                    authClaims.Add(roleClaim);
-        //                }
-        //            }
-        //        }
-
-        //        // take all those claims and now wrap it into the token.
-        //        var token = _tokenService.CreateToken(authClaims, _configuration.GetValue<string>("JWT:Audience"));
-        //        var refreshToken = _tokenService.GenerateRefreshToken();
-
-        //        user.RefreshToken = refreshToken;
-        //        user.RefreshTokenExpiryTime = DateTime.Now.AddDays(_tokenService.GetRefreshTokenValidityDays());
-
-        //        _ = _userManager.UpdateAsync(user).Result;
-
-        //        // set the tokens
-        //        _httpContextAccessor.HttpContext?.Session.Set("AccessToken", Encoding.ASCII.GetBytes(new JwtSecurityTokenHandler().WriteToken(token)));
-        //        _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(refreshToken));
-        //        _httpContextAccessor.HttpContext?.Session.Set("RefreshTokenExpiryTime", Encoding.ASCII.GetBytes(user.RefreshTokenExpiryTime.ToString()));
-
-        //        return Redirect("/Home/SecureLanding");
-        //    }
-        //    return Unauthorized();
-        //}
-
+            return Redirect("Home/Index");
+        }
 
         [AllowAnonymous]
         [HttpPost]
