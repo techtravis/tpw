@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Library.Auth\Library.Auth.csproj" />
+    <ProjectReference Include="..\Library.Auth\Library.Database.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿using Library.Auth.TableModels;
+﻿using Library.Database.Auth.TableModels;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Library.Auth
+namespace Library.Database.Auth
 {
     public class SecureUser : IdentityUser
     {

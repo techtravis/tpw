@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using Library.Auth;
+using Library.Database.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
@@ -20,10 +20,10 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
 {
     //public class LoginModel : PageModel
     //{
-    //    private readonly SignInManager<SecureUser> _signInManager;
+    //    private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
     //    private readonly ILogger<LoginModel> _logger;
 
-    //    public LoginModel(SignInManager<SecureUser> signInManager, ILogger<LoginModel> logger)
+    //    public LoginModel(SignInManager<Library.Database.Auth.SecureUser> signInManager, ILogger<LoginModel> logger)
     //    {
     //        _signInManager = signInManager;
     //        _logger = logger;

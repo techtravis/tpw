@@ -6,13 +6,14 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Library.Auth
+namespace Library.Database.Auth
 {
     public interface ITokenService
     {
-        JwtSecurityToken CreateToken(List<Claim> authClaims);
+        JwtSecurityToken CreateToken(List<Claim> authClaims, string audience);
         string GenerateRefreshToken();
         ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token);
+        ClaimsPrincipal? GetPrincipalFromToken(string? token);
         int GetRefreshTokenValidityDays();
     }
 }

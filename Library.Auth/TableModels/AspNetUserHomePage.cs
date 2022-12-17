@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Library.Database.Auth;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace Library.Auth.TableModels
+namespace Library.Database.Auth.TableModels
 {
     public class AspNetUserHomePage
     {

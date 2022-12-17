@@ -1,4 +1,5 @@
-﻿using Library.Auth.TableModels;
+﻿using Library.Database.Auth.TableModels;
+using Library.Database.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -8,10 +9,11 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using Library.Database.TableModels;
 
-namespace Library.Auth
+namespace Library.Database.Auth
 {
-    public class ApplicationDbContext : IdentityDbContext<SecureUser>
+    public class ApplicationDbContext : IdentityDbContext<Library.Database.Auth.SecureUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -19,6 +21,9 @@ namespace Library.Auth
 
         public DbSet<AspNetUserHomePage> AspNetUserHomePage { get; set; }
         public DbSet<ImageStore> ImageStore { get; set; }
+        public DbSet<LedFeed> LedFeed { get; set; }
+        public DbSet<InterviewPrepQuestion> InterviewPrepQuestion { get; set; }
+        public DbSet<AppException> AppException { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -26,6 +31,9 @@ namespace Library.Auth
 
             builder.Entity<AspNetUserHomePage>().ToTable("AspNetUserHomePage");
             builder.Entity<ImageStore>().ToTable("ImageStore");
+            builder.Entity<LedFeed>().ToTable("LedFeed");
+            builder.Entity<InterviewPrepQuestion>().ToTable("InterviewPrepQuestion");
+            builder.Entity<AppException>().ToTable("AppException");
         }
     }
 

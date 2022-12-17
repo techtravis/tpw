@@ -21,7 +21,7 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "https://www.travispwalker.com;http://www.travispwalker.com",
+      "applicationUrl": "https://www.travispwalker.com",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production"
       }

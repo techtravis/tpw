@@ -1,5 +1,6 @@
-﻿using Library.Auth;
-using Library.Auth.TableModels;
+﻿using Library.Database.Auth;
+using Library.Database.Auth.TableModels;
+using Library.Database.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,12 +11,14 @@ using System.Security.Claims;
 using System.Text;
 using System.Xml.Linq;
 using TravisPWalker.Models;
+using Library.Database.Auth.Models;
+using System.Text.Json;
 
 namespace TravisPWalker.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly UserManager<SecureUser> _userManager;        
+        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;        
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly ITokenService _tokenService;
@@ -24,7 +27,7 @@ namespace TravisPWalker.Controllers
 
 
         public HomeController(
-            UserManager<SecureUser> userManager,
+            UserManager<Library.Database.Auth.SecureUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             ITokenService tokenService,
@@ -59,6 +62,33 @@ namespace TravisPWalker.Controllers
             return View(User?.Claims);
         }
 
+        [Authorize]
+        public IActionResult BlazorSite()
+        {
+            string audience = _configuration.GetValue<string>("URLS:blazor");
+            string? token = HttpContext?.Session.GetString("AccessToken");
+            string? refreshToken = HttpContext?.Session.GetString("RefreshToken");
+            UserToken userToken = new UserToken() { AccessToken = token, RefreshToken = refreshToken, Audience = audience };
+
+            HttpClient client = new HttpClient();
+
+            string apiUrl = _configuration.GetValue<string>("URLS:api");
+            string usermodel = JsonSerializer.Serialize(userToken);
+            byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(usermodel);
+            var content = new ByteArrayContent(messageBytes);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            var response = client.PostAsync($"{apiUrl}/api/Authenticate/refresh-token", content).Result;
+            string result="";
+            if (response.IsSuccessStatusCode)
+            {
+                result = response.Content.ReadAsStringAsync().Result;
+            }
+
+            string blazorUrl = _configuration.GetValue<string>("URLS:blazor");
+            return Redirect($"{blazorUrl}/tokenaccess?Token={result}&RedirectURL=fetchdata");
+        }
+
         [AllowAnonymous]
         [Route("/Error")]
         public IActionResult Error()
@@ -70,7 +100,7 @@ namespace TravisPWalker.Controllers
         [HttpGet]
         public IActionResult SecureLanding()
         {
-            string? token = HttpContext?.Session.GetString("Token");
+            string? token = HttpContext?.Session.GetString("AccessToken");
 
             if (token == null)
             {

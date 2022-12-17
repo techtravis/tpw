@@ -5,7 +5,7 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using Library.Auth;
+using Library.Database.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -18,10 +18,10 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
     [AllowAnonymous]
     public class RegisterConfirmationModel : PageModel
     {
-        private readonly UserManager<SecureUser> _userManager;
+        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
         private readonly IEmailSender _sender;
 
-        public RegisterConfirmationModel(UserManager<SecureUser> userManager, IEmailSender sender)
+        public RegisterConfirmationModel(UserManager<Library.Database.Auth.SecureUser> userManager, IEmailSender sender)
         {
             _userManager = userManager;
             _sender = sender;

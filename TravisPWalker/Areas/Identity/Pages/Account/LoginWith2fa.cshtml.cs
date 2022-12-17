@@ -5,25 +5,25 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Library.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Library.Database.Auth;
 
 namespace TravisPWalker.Areas.Identity.Pages.Account
 {
     public class LoginWith2faModel : PageModel
     {
-        private readonly SignInManager<SecureUser> _signInManager;
-        private readonly UserManager<SecureUser> _userManager;
+        private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
+        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
         private readonly ILogger<LoginWith2faModel> _logger;
 
         public LoginWith2faModel(
-            SignInManager<SecureUser> signInManager,
-            UserManager<SecureUser> userManager,
+            SignInManager<Library.Database.Auth.SecureUser> signInManager,
+            UserManager<Library.Database.Auth.SecureUser> userManager,
             ILogger<LoginWith2faModel> logger)
         {
             _signInManager = signInManager;

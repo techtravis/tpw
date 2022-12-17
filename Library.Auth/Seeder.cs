@@ -1,4 +1,4 @@
-﻿using Library.Auth;
+﻿using Library.Database.Auth;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -7,14 +7,14 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Library.Auth
+namespace Library.Database.Auth
 {
     // Don't know why I always get confused with Roles and Claims...
     // But in case I have a brain fart again..
     // good description at  https://stackoverflow.com/questions/50401190/asp-net-core-identity-use-aspnetuserclaims-or-aspnetroleclaims
     public static class Seeder
     {
-        public static async Task SeedRolesAsync(UserManager<SecureUser> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task SeedRolesAsync(UserManager<Library.Database.Auth.SecureUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             //Seed Roles
             foreach(var role in Enum.GetValues(typeof(Enumerators.Roles)).Cast<Enumerators.Roles>())
@@ -23,11 +23,11 @@ namespace Library.Auth
             }
 
             var user = userManager.FindByNameAsync("techtravis@gmail.com").Result;
-            await userManager.AddToRoleAsync(user, Library.Auth.Enumerators.Roles.Advanced.ToString());
-            await userManager.AddToRoleAsync(user, Library.Auth.Enumerators.Roles.God.ToString());
+            await userManager.AddToRoleAsync(user, Library.Database.Auth.Enumerators.Roles.Advanced.ToString());
+            await userManager.AddToRoleAsync(user, Library.Database.Auth.Enumerators.Roles.God.ToString());
         }
 
-        public static async Task SeedRoleClaimsAsync(UserManager<SecureUser> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task SeedRoleClaimsAsync(UserManager<Library.Database.Auth.SecureUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             // when we make RoleClaims there is no built in method to prevent duplicats
             // so we need to take a little extra care by getting the list of claims for the role

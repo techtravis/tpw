@@ -13,7 +13,7 @@
         But the actual authentication is handled via a jwt token.  I created a new class that inherits from IdentityUser called SecureUser that extends the fields available to include 
         First Name, Last Name, a refresh token, refresh expiration, profile picture ect.  Doing so required that I also scaffold out the entire Identity Pages so that I could change the reference there as well. </p>
 
-    <p>Most of this is stored in a library called Library.Auth so that it can be shared between the core mvc project, api project and anything else I plan to add.</p>
+    <p>Most of this is stored in a library called Library.Database.Auth so that it can be shared between the core mvc project, api project and anything else I plan to add.</p>
 
     <p>The next thing we will implement after the security will be an API that makes calls to insert new records to a table that is then parsed out to an RSS feed and consumed by a LED sign in my house.<br />
         The code for the led sign and rss feed reader can be found at:  <a target="_github" href="https://github.com/techtravis/ScrollSign">ScrollSign</a> </br>

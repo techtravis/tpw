@@ -9,8 +9,9 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
+using Library.Database.Auth;
 
-namespace Library.Auth.TableModels
+namespace Library.Database.Auth.TableModels
 {
     public class ImageStore
     {
@@ -27,7 +28,7 @@ namespace Library.Auth.TableModels
         [ForeignKey("UploadedBy")]
         public SecureUser SecureUser { get; set; }
 
-        public static string InsertAndProvideId(ApplicationDbContext context, ClaimsPrincipal secureUser, UserManager<SecureUser> userManager, IFormFile file)
+        public static string InsertAndProvideId(ApplicationDbContext context, ClaimsPrincipal secureUser, UserManager<Library.Database.Auth.SecureUser> userManager, IFormFile file)
         {
             if (IsImage(file) && secureUser.Identity != null && secureUser.IsInRole("God"))
             {

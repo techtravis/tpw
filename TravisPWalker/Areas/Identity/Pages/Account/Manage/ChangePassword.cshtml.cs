@@ -5,7 +5,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Library.Auth;
+using Library.Database.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -15,13 +15,13 @@ namespace TravisPWalker.Areas.Identity.Pages.Account.Manage
 {
     public class ChangePasswordModel : PageModel
     {
-        private readonly UserManager<SecureUser> _userManager;
-        private readonly SignInManager<SecureUser> _signInManager;
+        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
         private readonly ILogger<ChangePasswordModel> _logger;
 
         public ChangePasswordModel(
-            UserManager<SecureUser> userManager,
-            SignInManager<SecureUser> signInManager,
+            UserManager<Library.Database.Auth.SecureUser> userManager,
+            SignInManager<Library.Database.Auth.SecureUser> signInManager,
             ILogger<ChangePasswordModel> logger)
         {
             _userManager = userManager;

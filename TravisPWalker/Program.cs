@@ -1,4 +1,5 @@
-using Library.Auth;
+using Library.Database.Auth;
+using Library.Database.Auth.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -68,7 +69,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        var userManager = services.GetRequiredService<UserManager<SecureUser>>();
+        var userManager = services.GetRequiredService<UserManager<Library.Database.Auth.SecureUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         await Seeder.SeedRolesAsync(userManager, roleManager);
         await Seeder.SeedRoleClaimsAsync(userManager, roleManager);
@@ -96,7 +97,7 @@ else
 app.UseSession();
 app.Use(async (context, next) =>
 {
-    var token = context.Session.GetString("Token");
+    var token = context.Session.GetString("AccessToken");
     if (!string.IsNullOrEmpty(token))
     {
         Debug.WriteLine("**** START OF FOUND TOKEN ****");

@@ -5,9 +5,11 @@ VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TravisPWalker", "TravisPWalker\TravisPWalker.csproj", "{1FB4960B-2B66-4D6C-BE9E-63217CBDDD11}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Auth", "Library.Auth\Library.Auth.csproj", "{D79A3465-7640-4492-9805-D08FB221A242}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Database", "Library.Auth\Library.Database.csproj", "{D79A3465-7640-4492-9805-D08FB221A242}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "api.travispwalker", "api.travispwalker\api.travispwalker.csproj", "{A7C74DB1-F39D-409B-B94F-9FBB390C4008}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.TravisPWalker", "Blazor.TravisPWalker\Blazor.TravisPWalker.csproj", "{5E3C9AE8-3061-4F85-BEE8-81E8262994B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{A7C74DB1-F39D-409B-B94F-9FBB390C4008}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7C74DB1-F39D-409B-B94F-9FBB390C4008}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7C74DB1-F39D-409B-B94F-9FBB390C4008}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E3C9AE8-3061-4F85-BEE8-81E8262994B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E3C9AE8-3061-4F85-BEE8-81E8262994B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E3C9AE8-3061-4F85-BEE8-81E8262994B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E3C9AE8-3061-4F85-BEE8-81E8262994B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

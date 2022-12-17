@@ -6,7 +6,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Library.Auth;
+using Library.Database.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -15,12 +15,12 @@ namespace TravisPWalker.Areas.Identity.Pages.Account.Manage
 {
     public class IndexModel : PageModel
     {
-        private readonly UserManager<SecureUser> _userManager;
-        private readonly SignInManager<SecureUser> _signInManager;
+        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
 
         public IndexModel(
-            UserManager<SecureUser> userManager,
-            SignInManager<SecureUser> signInManager)
+            UserManager<Library.Database.Auth.SecureUser> userManager,
+            SignInManager<Library.Database.Auth.SecureUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;

@@ -1,4 +1,4 @@
-using Library.Auth;
+using Library.Database.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,7 @@ ConfigurationManager configuration = builder.Configuration;
 // Add services to the container.
 
 // For EF
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("Main"), x => x.MigrationsAssembly("api.travispwalker")));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("Main"), x => x.MigrationsAssembly("TravisPWalker")));
 
 // For Asp.net Identity
 builder.Services.AddIdentity<SecureUser, IdentityRole>()

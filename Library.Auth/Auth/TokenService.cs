@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Library.Auth
+namespace Library.Database.Auth
 {
     public class TokenService : ITokenService
     {
@@ -20,27 +20,27 @@ namespace Library.Auth
         private string JwtValidMinutes;
         private string JwtRefreshTokenValidityInDays;
 
-        public TokenService(IAuthConfigManager authConfigManager) 
+        public TokenService(IAuthConfigManager authConfigManager)
         {
-            _authConfigManager= authConfigManager;
+            _authConfigManager = authConfigManager;
 
             JwtSecret = _authConfigManager.JwtSecret;
             JwtIssuer = _authConfigManager.JwtIssuer;
             JwtAudience = _authConfigManager.JwtAudience;
-            JwtValidMinutes= _authConfigManager.JwtValidMinutes;
+            JwtValidMinutes = _authConfigManager.JwtValidMinutes;
             JwtRefreshTokenValidityInDays = _authConfigManager.JwtRefreshTokenValidityInDays;
         }
 
-        
 
-        public JwtSecurityToken CreateToken(List<Claim> authClaims)
+
+        public JwtSecurityToken CreateToken(List<Claim> authClaims, string audience)
         {
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSecret));
             _ = int.TryParse(JwtValidMinutes, out int tokenValidityInMinutes);
 
             var token = new JwtSecurityToken(
                 issuer: JwtIssuer,
-                audience: JwtAudience,
+                audience: audience,
                 expires: DateTime.Now.AddMinutes(tokenValidityInMinutes),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
@@ -80,11 +80,14 @@ namespace Library.Auth
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
-                ValidateAudience = true,
                 ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
+                ClockSkew = TimeSpan.Zero,
+                ValidAudience = JwtAudience,
+                ValidIssuer = JwtIssuer,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSecret)),
-                ValidateLifetime = true
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();

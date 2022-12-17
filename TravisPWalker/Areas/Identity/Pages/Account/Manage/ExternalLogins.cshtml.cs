@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Library.Auth;
+using Library.Database.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,14 +17,14 @@ namespace TravisPWalker.Areas.Identity.Pages.Account.Manage
 {
     public class ExternalLoginsModel : PageModel
     {
-        private readonly UserManager<SecureUser> _userManager;
-        private readonly SignInManager<SecureUser> _signInManager;
-        private readonly IUserStore<SecureUser> _userStore;
+        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
+        private readonly IUserStore<Library.Database.Auth.SecureUser> _userStore;
 
         public ExternalLoginsModel(
-            UserManager<SecureUser> userManager,
-            SignInManager<SecureUser> signInManager,
-            IUserStore<SecureUser> userStore)
+            UserManager<Library.Database.Auth.SecureUser> userManager,
+            SignInManager<Library.Database.Auth.SecureUser> signInManager,
+            IUserStore<Library.Database.Auth.SecureUser> userStore)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -70,7 +70,7 @@ namespace TravisPWalker.Areas.Identity.Pages.Account.Manage
                 .ToList();
 
             string passwordHash = null;
-            if (_userStore is IUserPasswordStore<SecureUser> userPasswordStore)
+            if (_userStore is IUserPasswordStore<Library.Database.Auth.SecureUser> userPasswordStore)
             {
                 passwordHash = await userPasswordStore.GetPasswordHashAsync(user, HttpContext.RequestAborted);
             }

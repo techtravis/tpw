@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using Library.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
@@ -18,23 +17,24 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Library.Database.Auth;
 
 namespace TravisPWalker.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
     public class ExternalLoginModel : PageModel
     {
-        private readonly SignInManager<SecureUser> _signInManager;
-        private readonly UserManager<SecureUser> _userManager;
-        private readonly IUserStore<SecureUser> _userStore;
-        private readonly IUserEmailStore<SecureUser> _emailStore;
+        private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
+        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly IUserStore<Library.Database.Auth.SecureUser> _userStore;
+        private readonly IUserEmailStore<Library.Database.Auth.SecureUser> _emailStore;
         private readonly IEmailSender _emailSender;
         private readonly ILogger<ExternalLoginModel> _logger;
 
         public ExternalLoginModel(
-            SignInManager<SecureUser> signInManager,
-            UserManager<SecureUser> userManager,
-            IUserStore<SecureUser> userStore,
+            SignInManager<Library.Database.Auth.SecureUser> signInManager,
+            UserManager<Library.Database.Auth.SecureUser> userManager,
+            IUserStore<Library.Database.Auth.SecureUser> userStore,
             ILogger<ExternalLoginModel> logger,
             IEmailSender emailSender)
         {
@@ -202,7 +202,7 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
         {
             try
             {
-                return Activator.CreateInstance<SecureUser>();
+                return Activator.CreateInstance<Library.Database.Auth.SecureUser>();
             }
             catch
             {
@@ -212,13 +212,13 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
             }
         }
 
-        private IUserEmailStore<SecureUser> GetEmailStore()
+        private IUserEmailStore<Library.Database.Auth.SecureUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)
             {
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }
-            return (IUserEmailStore<SecureUser>)_userStore;
+            return (IUserEmailStore<Library.Database.Auth.SecureUser>)_userStore;
         }
     }
 }

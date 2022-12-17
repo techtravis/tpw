@@ -1,0 +1,97 @@
+﻿@page "/login"
+@using Blazor.TravisPWalker.Authentication
+@using System.Text
+@using System.Text.Json
+@using Library.Database.Auth
+@using Library.Database.Auth.Models
+@inject IJSRuntime js
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+@inject IConfiguration _configuration
+
+
+<AuthorizeView>
+    <Authorized>
+        <h1>Hello, @context.User.Identity?.Name</h1>
+    </Authorized>
+    <NotAuthorized>
+        @if (Authorizing)
+        {
+            <div class="container h-100">
+                <div class="d-flex justify-content-md-center align-items-center vh-100">
+                    <img src="images/Loading_2.gif" />
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
+                    <div class="mb-3 text-center">
+                        <h3>Login</h3>
+                    </div>
+                    <div class="mb-3">
+                        <label>User Name</label>
+                        <input @bind="model.UserName" class="form-control" placeholder="User Name" autocomplete="username" aria-required="true"/>
+                    </div>
+                    <div class="mb-3">
+                        <label>Password</label>
+                        <input @bind="model.Password" class="form-control" placeholder="Password" autocomplete="current-password" aria-required="true" type="password" />
+                    </div>
+                    <div class="mb-3 d-grid gap-2">
+                        <button @onclick="Authenticate" class="btn btn-primary">Login</button>
+                    </div>
+                </div>
+            </div>
+        }        
+    </NotAuthorized>
+</AuthorizeView>
+
+
+
+@code {
+    private class Model
+    {
+        public string UserName { get; set; }
+        public string Password { get; set; }
+        public string Audience { get; set; } 
+    }
+
+    private Model model = new Model();
+    private bool Authorizing { get; set; } = false;
+
+    private async Task Authenticate()
+    {        
+        if (model.UserName != null && model.Password != null)
+        {
+            Authorizing = true;
+            this.StateHasChanged();
+            await Task.Delay(100);
+            model.Audience = _configuration.GetValue<string>("URLS:blazor");
+            HttpClient client = new HttpClient();
+
+            string apiUrl = _configuration.GetValue<string>("URLS:api");
+            string usermodel = JsonSerializer.Serialize(model);
+            byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(usermodel);
+            var content = new ByteArrayContent(messageBytes);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            var response = client.PostAsync($"{apiUrl}/api/Authenticate/login", content).Result;
+            string result;
+            if (response.IsSuccessStatusCode)
+            {
+                result = response.Content.ReadAsStringAsync().Result;
+                TokenViewModel? token = JsonSerializer.Deserialize<TokenViewModel>(result);
+                if (token != null)
+                {
+                    var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
+                    await blzrAuthStateProvider.UpdateAuthenticationState(token);
+                    navManager.NavigateTo("/", true);
+                    return;
+                }
+            }
+        }
+        Authorizing = false;
+        await js.InvokeVoidAsync("alert", "Invalid User Name or Password");
+    }
+}

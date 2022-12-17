@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Library.Auth.Models
+namespace Library.Database.Auth.Models
 {
     public class LoginModel
     {
@@ -23,5 +23,6 @@ namespace Library.Auth.Models
         public bool RememberMe { get; set; }
 
         public string ReturnUrl { get; set; } = "";
+        public string Audience { get; set; } = "";
     }
 }

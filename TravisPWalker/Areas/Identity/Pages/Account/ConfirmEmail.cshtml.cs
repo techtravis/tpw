@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Library.Auth;
+using Library.Database.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,9 +17,9 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
 {
     public class ConfirmEmailModel : PageModel
     {
-        private readonly UserManager<SecureUser> _userManager;
+        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
 
-        public ConfirmEmailModel(UserManager<SecureUser> userManager)
+        public ConfirmEmailModel(UserManager<Library.Database.Auth.SecureUser> userManager)
         {
             _userManager = userManager;
         }

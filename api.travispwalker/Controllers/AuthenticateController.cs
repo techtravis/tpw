@@ -7,8 +7,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Library.Auth;
-using Library.Auth.Models;
+using Library.Database.Auth.Models;
+using Library.Database.Auth;
+using System.Text.Json;
 
 namespace api.travispwalker.Controllers
 {
@@ -16,13 +17,13 @@ namespace api.travispwalker.Controllers
     [ApiController]
     public class AuthenticateController : ControllerBase
     {
-        private readonly UserManager<SecureUser> _userManager;
+        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly ITokenService _tokenService;
 
         public AuthenticateController(
-            UserManager<SecureUser> userManager,
+            UserManager<Library.Database.Auth.SecureUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             ITokenService tokenService)
@@ -38,6 +39,7 @@ namespace api.travispwalker.Controllers
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
             var user = await _userManager.FindByNameAsync(model.UserName);
+            model.Audience = model.Audience == null ? _configuration.GetValue<string>("JWT:ValidAudience") : model.Audience;
 
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
@@ -70,7 +72,7 @@ namespace api.travispwalker.Controllers
                 }
 
                 // take all those claims and now wrap it into the token.
-                var token = _tokenService.CreateToken(authClaims);
+                var accesstoken = _tokenService.CreateToken(authClaims, model.Audience);
                 var refreshToken = _tokenService.GenerateRefreshToken();
 
                 user.RefreshToken = refreshToken;
@@ -80,9 +82,9 @@ namespace api.travispwalker.Controllers
 
                 return Ok(new
                 {
-                    Token = new JwtSecurityTokenHandler().WriteToken(token),
+                    AccessToken = new JwtSecurityTokenHandler().WriteToken(accesstoken),
                     RefreshToken = refreshToken,
-                    Expiration = token.ValidTo
+                    Expiration = accesstoken.ValidTo
                 });
             }
             return Unauthorized();
@@ -99,6 +101,7 @@ namespace api.travispwalker.Controllers
 
             string? accessToken = tokenModel.AccessToken;
             string? refreshToken = tokenModel.RefreshToken;
+            string? audience = tokenModel.Audience;
 
             var principal = _tokenService.GetPrincipalFromExpiredToken(accessToken);
             if (principal == null)
@@ -115,7 +118,7 @@ namespace api.travispwalker.Controllers
                 return BadRequest("Invalid access token or refresh token");
             }
 
-            var newAccessToken = _tokenService.CreateToken(principal.Claims.ToList());
+            var newAccessToken = _tokenService.CreateToken(principal.Claims.ToList(), audience);
             var newRefreshToken = _tokenService.GenerateRefreshToken();
 
             user.RefreshToken = newRefreshToken;
@@ -124,7 +127,8 @@ namespace api.travispwalker.Controllers
             return new ObjectResult(new
             {
                 accessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
-                refreshToken = newRefreshToken
+                refreshToken = newRefreshToken,
+                Expiration = newAccessToken.ValidTo
             });
         }
 
@@ -169,6 +173,23 @@ namespace api.travispwalker.Controllers
                 return StatusCode(403);
             }
         }
+
+        [Authorize]
+        [HttpPost]
+        [Route("auth-check")]
+        public async Task<IActionResult> AuthCHeck()
+        {
+            if(User.IsInRole("God") || User.IsInRole("Admin") || User.IsInRole("Advanced") || User.IsInRole("Basic"))
+            {
+                return StatusCode(202);
+            }
+            else
+            {
+                return StatusCode(403);
+            }
+
+        }
+
 
 
     }

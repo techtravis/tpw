@@ -1,0 +1,26 @@
+﻿@page "/"
+@inject IJSRuntime js
+
+<PageTitle>Index</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <h1>Hello, @context.User?.Identity?.Name</h1>
+    </Authorized>
+    <NotAuthorized>
+        <h1>Hello, Guest</h1>
+    </NotAuthorized>
+</AuthorizeView>
+
+Welcome to the Blazor portion of my demo.
+
+@code{
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+    private async Task DisplayGreetingAlert()
+    {
+        var authState = await authenticationState;
+        var message = $"Hello {authState.User.Identity.Name}";
+        js.InvokeVoidAsync("alert", message);
+    }
+}

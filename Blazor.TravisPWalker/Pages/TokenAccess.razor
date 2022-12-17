@@ -1,0 +1,47 @@
+﻿@page "/tokenaccess"
+@using Blazor.TravisPWalker.Authentication
+@using System.Text
+@using System.Text.Json
+@using Library.Database.Auth
+@using Library.Database.Auth.Models
+@using Microsoft.AspNetCore.WebUtilities
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+@inject IConfiguration _configuration
+
+
+@code {
+    protected override async Task<Task> OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            string tokenEncrypted;
+        //get our URI
+        var uri = navManager.ToAbsoluteUri(navManager.Uri);
+
+        var foundQueryParameter = QueryHelpers.ParseQuery(uri.Query).TryGetValue("Token", out var encryptedToken);
+        if (foundQueryParameter)
+        {
+            tokenEncrypted = encryptedToken.ToString();
+
+            TokenViewModel? token = JsonSerializer.Deserialize<TokenViewModel>(tokenEncrypted);
+            if (token != null)
+            {
+                var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
+                await blzrAuthStateProvider.UpdateAuthenticationState(token);
+
+                string returnUrl = "";
+                var foundReturnUrl = QueryHelpers.ParseQuery(uri.Query).TryGetValue("RedirectURL", out var returnUrlOut);
+                if (foundReturnUrl)
+                {
+                    returnUrl = returnUrlOut.ToString();
+                }
+
+                navManager.NavigateTo($"/{returnUrl}", true);
+                    return base.OnAfterRenderAsync(firstRender);
+            }
+        }
+        }
+        return base.OnAfterRenderAsync(firstRender);
+    }
+}
