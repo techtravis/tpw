@@ -78,15 +78,16 @@ namespace TravisPWalker.Controllers
             var content = new ByteArrayContent(messageBytes);
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
-            var response = client.PostAsync($"{apiUrl}/api/Authenticate/refresh-token", content).Result;
+            var response = client.PostAsync($"{apiUrl}/api/Authenticate/newtoken", content).Result;
             string result="";
             if (response.IsSuccessStatusCode)
             {
                 result = response.Content.ReadAsStringAsync().Result;
+                string blazorUrl = _configuration.GetValue<string>("URLS:blazor");
+                return Redirect($"{blazorUrl}/tokenaccess?Token={result}&RedirectURL=fetchdata");
             }
 
-            string blazorUrl = _configuration.GetValue<string>("URLS:blazor");
-            return Redirect($"{blazorUrl}/tokenaccess?Token={result}&RedirectURL=fetchdata");
+            return RedirectToAction("Login", "Account");
         }
 
         [AllowAnonymous]

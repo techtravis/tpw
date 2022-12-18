@@ -39,7 +39,7 @@
                 var content = new ByteArrayContent(messageBytes);
                 content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
-                var response = client.PostAsync($"{apiUrl}/api/Authenticate/refresh-token", content).Result;
+                var response = client.PostAsync($"{apiUrl}/api/Authenticate/newtoken", content).Result;
                 string result = "";
                 if (response.IsSuccessStatusCode)
                 {

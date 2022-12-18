@@ -91,6 +91,48 @@ namespace api.travispwalker.Controllers
         }
 
         [HttpPost]
+        [Route("newtoken")]
+        public async Task<IActionResult> NewToken(UserToken tokenModel)
+        {
+            if (tokenModel is null)
+            {
+                return BadRequest("Invalid client request");
+            }
+
+            string? accessToken = tokenModel.AccessToken;
+            string? refreshToken = tokenModel.RefreshToken;
+            string? audience = tokenModel.Audience;
+
+            var principal = _tokenService.GetPrincipalFromToken(accessToken, false);
+            if (principal == null)
+            {
+                return BadRequest("Invalid access token or refresh token");
+            }
+
+            string? username = principal.Identity?.Name;
+
+            var user = await _userManager.FindByNameAsync(username == null ? "" : username);
+
+            if (user == null || user.RefreshTokenExpiryTime <= DateTime.Now)
+            {
+                return BadRequest("Invalid refresh token");
+            }
+
+            var newAccessToken = _tokenService.CreateToken(principal.Claims.ToList(), audience);
+            var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            await _userManager.UpdateAsync(user);
+
+            return new ObjectResult(new
+            {
+                accessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
+                refreshToken = newRefreshToken,
+                Expiration = newAccessToken.ValidTo
+            });
+        }
+
+        [HttpPost]
         [Route("refresh-token")]
         public async Task<IActionResult> RefreshToken(UserToken tokenModel)
         {

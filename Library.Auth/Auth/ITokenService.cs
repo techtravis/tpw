@@ -13,7 +13,7 @@ namespace Library.Database.Auth
         JwtSecurityToken CreateToken(List<Claim> authClaims, string audience);
         string GenerateRefreshToken();
         ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token);
-        ClaimsPrincipal? GetPrincipalFromToken(string? token);
+        ClaimsPrincipal? GetPrincipalFromToken(string? token, bool validateAudience = true);
         int GetRefreshTokenValidityDays();
     }
 }

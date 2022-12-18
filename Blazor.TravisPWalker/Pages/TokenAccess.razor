@@ -9,6 +9,11 @@
 @inject NavigationManager navManager
 @inject IConfiguration _configuration
 
+<div class="container h-100">
+    <div class="d-flex justify-content-md-center align-items-center vh-100">
+        <img src="images/Loading_2.gif" />
+    </div>
+</div>
 
 @code {
     protected override async Task<Task> OnAfterRenderAsync(bool firstRender)
@@ -16,31 +21,31 @@
         if (firstRender)
         {
             string tokenEncrypted;
-        //get our URI
-        var uri = navManager.ToAbsoluteUri(navManager.Uri);
+            //get our URI
+            var uri = navManager.ToAbsoluteUri(navManager.Uri);
 
-        var foundQueryParameter = QueryHelpers.ParseQuery(uri.Query).TryGetValue("Token", out var encryptedToken);
-        if (foundQueryParameter)
-        {
-            tokenEncrypted = encryptedToken.ToString();
-
-            TokenViewModel? token = JsonSerializer.Deserialize<TokenViewModel>(tokenEncrypted);
-            if (token != null)
+            var foundQueryParameter = QueryHelpers.ParseQuery(uri.Query).TryGetValue("Token", out var encryptedToken);
+            if (foundQueryParameter)
             {
-                var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
-                await blzrAuthStateProvider.UpdateAuthenticationState(token);
+                tokenEncrypted = encryptedToken.ToString();
 
-                string returnUrl = "";
-                var foundReturnUrl = QueryHelpers.ParseQuery(uri.Query).TryGetValue("RedirectURL", out var returnUrlOut);
-                if (foundReturnUrl)
+                TokenViewModel? token = JsonSerializer.Deserialize<TokenViewModel>(tokenEncrypted);
+                if (token != null)
                 {
-                    returnUrl = returnUrlOut.ToString();
-                }
+                    var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
+                    await blzrAuthStateProvider.UpdateAuthenticationState(token);
 
-                navManager.NavigateTo($"/{returnUrl}", true);
-                    return base.OnAfterRenderAsync(firstRender);
+                    string returnUrl = "";
+                    var foundReturnUrl = QueryHelpers.ParseQuery(uri.Query).TryGetValue("RedirectURL", out var returnUrlOut);
+                    if (foundReturnUrl)
+                    {
+                        returnUrl = returnUrlOut.ToString();
+                    }
+
+                    navManager.NavigateTo($"/{returnUrl}", true);
+                        return base.OnAfterRenderAsync(firstRender);
+                }
             }
-        }
         }
         return base.OnAfterRenderAsync(firstRender);
     }

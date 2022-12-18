@@ -76,12 +76,12 @@ namespace Library.Database.Auth
             return principal;
         }
 
-        public ClaimsPrincipal? GetPrincipalFromToken(string? token)
+        public ClaimsPrincipal? GetPrincipalFromToken(string? token, bool validateAudience = true)
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidateAudience = true,
+                ValidateAudience = validateAudience,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
                 ClockSkew = TimeSpan.Zero,
