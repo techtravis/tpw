@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Library.Database.Auth.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Library.Database.Auth
@@ -91,11 +93,20 @@ namespace Library.Database.Auth
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-            if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-                throw new SecurityTokenException("Invalid token");
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+                if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                    throw new SecurityTokenException("Invalid token");
 
-            return principal;
+                return principal;
+            }
+            catch(Exception ex) 
+            {
+                throw new SecurityTokenException("Invalid token");
+                //return null;
+            }
+            
         }
 
         public int GetRefreshTokenValidityDays()
@@ -103,6 +114,30 @@ namespace Library.Database.Auth
             int days = 0;
             int.TryParse(JwtRefreshTokenValidityInDays, out days);
             return days;
+        }
+
+        public TokenViewModel? GetTokenForAudience(string curToken, string curRefreshToken, string audience)
+        {
+            UserToken userToken = new UserToken() { AccessToken = curToken, RefreshToken = curRefreshToken, Audience = audience };
+
+            HttpClient client = new HttpClient();
+            string usermodel = JsonSerializer.Serialize(userToken);
+            byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(usermodel);
+            var content = new ByteArrayContent(messageBytes);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            var response = client.PostAsync($"{JwtIssuer}/api/Authenticate/newtoken", content).Result;
+            string result = "";
+            if (response.IsSuccessStatusCode)
+            {
+                result = response.Content.ReadAsStringAsync().Result;
+                TokenViewModel? tokenModel = JsonSerializer.Deserialize<TokenViewModel>(result);
+
+                ClaimsPrincipal? principal = GetPrincipalFromExpiredToken(tokenModel?.accessToken);
+
+                return tokenModel;
+            }
+            return null;
         }
 
     }

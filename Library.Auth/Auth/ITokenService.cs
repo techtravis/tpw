@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Library.Database.Auth.Models;
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -15,5 +16,6 @@ namespace Library.Database.Auth
         ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token);
         ClaimsPrincipal? GetPrincipalFromToken(string? token, bool validateAudience = true);
         int GetRefreshTokenValidityDays();
+        TokenViewModel? GetTokenForAudience(string curToken, string curRefreshToken, string audience);
     }
 }

@@ -6,8 +6,9 @@
 @inject WeatherForecastService ForecastService
 
 <h1>Weather forecast</h1>
-
-<p>This component demonstrates fetching data from a service.</p>
+<AuthorizeView>
+    <Authorized>
+        <p>This component demonstrates fetching data from a service.</p>
 
 @if (forecasts == null)
 {
@@ -37,6 +38,14 @@ else
         </tbody>
     </table>
 }
+    </Authorized>
+    <NotAuthorized>
+        <div class="row">
+            You do not have permission to view this data
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
 
 @code {
     private WeatherForecast[]? forecasts;

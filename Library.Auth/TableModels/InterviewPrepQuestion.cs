@@ -50,5 +50,12 @@ namespace Library.Database.TableModels
             InterviewPrepQuestion? interviewPrepQuestion = context.InterviewPrepQuestion.FirstOrDefault(l => l.InterviewQuestionId == id);
             return interviewPrepQuestion;
         }
+
+        public static InterviewPrepQuestion? GetRandom(ApplicationDbContext context)
+        {
+            var questions = context.InterviewPrepQuestion.OrderBy(q => Guid.NewGuid()).Take(1);
+            InterviewPrepQuestion interviewPrepQuestion = questions.FirstOrDefault<InterviewPrepQuestion>();
+            return interviewPrepQuestion;
+        }
     }
 }

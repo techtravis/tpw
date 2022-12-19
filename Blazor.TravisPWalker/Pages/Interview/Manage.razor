@@ -1,0 +1,120 @@
+﻿@page "/Interview/Manage"
+@using Blazor.TravisPWalker.Authentication
+@using System.Text.Json
+@using Library.Database.Auth
+@using Library.Database.Auth.Models
+@using Library.Database.TableModels
+@using Library.Database.ViewModels
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+@inject IConfiguration _configuration
+@inject ITokenService _tokenService
+<h3>Manage</h3>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="row mb-2">
+            <div class="col-12">
+                Report with all questions here...
+            </div>
+        </div>        
+    </Authorized>
+    <NotAuthorized>
+        <div class="row">
+            You do not have permission to view this data
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+<AuthorizeView Roles="God">
+    <Authorized>
+        @if (saving)
+        {
+            <div class="container h-100">
+                <div class="d-flex justify-content-md-center align-items-center vh-100">
+                    <img src="images/Loading_2.gif" />
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row mb-2">
+                <div class="col-2">
+                    <h5>Question:</h5>
+                </div>
+                <div class="col-10">
+                    <textarea @bind="newQuestion.Question" class="form-control" placeholder="Question Text" aria-required="true" rows="3" />
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-2">
+                    <h5>Answer:</h5>
+                </div>
+                <div class="col-10">
+                    <textarea @bind="newQuestion.Answer" class="form-control" placeholder="Answer Text" aria-required="true" rows="6" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <div class="mb-3">
+                        <button @onclick="SaveQuestion" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+                <div class="col-10">
+                </div>
+            </div>
+        }        
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    private InterviewQuestion newQuestion = new InterviewQuestion();
+    private bool saving { get; set; } = false;
+
+    private async void SaveQuestion()
+    {
+        if(!String.IsNullOrWhiteSpace(newQuestion.Question) && !String.IsNullOrWhiteSpace(newQuestion.Answer))
+        {
+            newQuestion.Question = Library.Database.Helpers.HtmlHelper.HtmlEncodeMultiline(newQuestion.Question).ToString();
+            saving = true;
+            this.StateHasChanged();
+            await Task.Delay(100);
+
+            var authState = await authenticationState;
+            if (authState.User.Identity?.Name != null)
+            {
+                var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
+                TokenViewModel tvm = await blzrAuthStateProvider.GetUserSessionAsync();
+                string apiUrl = _configuration.GetValue<string>("URLS:api");
+                string blazorUrl = _configuration.GetValue<string>("URLS:blazor");
+                UserToken userToken = new UserToken() { AccessToken = tvm.accessToken, RefreshToken = tvm.refreshToken, Audience = blazorUrl };
+
+                TokenViewModel? apiTvm = _tokenService.GetTokenForAudience(tvm.accessToken, tvm.refreshToken, apiUrl);
+                if(apiTvm != null)
+                {
+                    HttpClient client = new HttpClient();
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiTvm.accessToken);
+                    string questionModel = JsonSerializer.Serialize(newQuestion);
+                    byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(questionModel);
+
+                    var content = new ByteArrayContent(messageBytes);
+                    content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                    var response = await client.PostAsync($"{apiUrl}/api/Interview/insert-update-question", content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        newQuestion = new InterviewQuestion();
+                        this.StateHasChanged();
+                    }
+                }
+            }
+        }
+
+        saving = false;
+        this.StateHasChanged();
+        return;
+    }
+}

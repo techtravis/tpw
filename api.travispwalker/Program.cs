@@ -39,8 +39,10 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         ClockSkew = TimeSpan.Zero,
-        ValidAudience = configuration["JWT:ValidAudience"],
-        ValidIssuer = configuration["JWT:ValidIssuer"],
+        //ValidAudience = configuration["JWT:ValidAudience"],
+        ValidAudiences = configuration.GetSection("JWT:ValidAudiences").Get<string[]>(),
+        ValidIssuers = configuration.GetSection("JWT:ValidIssuers").Get<string[]>(),
+        //ValidIssuer = configuration["JWT:ValidIssuer"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
     };
 });

@@ -21,6 +21,6 @@ Welcome to the Blazor portion of my demo.
     {
         var authState = await authenticationState;
         var message = $"Hello {authState.User.Identity.Name}";
-        js.InvokeVoidAsync("alert", message);
+        await js.InvokeVoidAsync("alert", message);
     }
 }
