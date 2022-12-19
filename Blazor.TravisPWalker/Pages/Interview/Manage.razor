@@ -1,10 +1,4 @@
 ﻿@page "/Interview/Manage"
-@using Blazor.TravisPWalker.Authentication
-@using System.Text.Json
-@using Library.Database.Auth
-@using Library.Database.Auth.Models
-@using Library.Database.TableModels
-@using Library.Database.ViewModels
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager navManager
 @inject IConfiguration _configuration
@@ -79,6 +73,7 @@
         if(!String.IsNullOrWhiteSpace(newQuestion.Question) && !String.IsNullOrWhiteSpace(newQuestion.Answer))
         {
             newQuestion.Question = Library.Database.Helpers.HtmlHelper.HtmlEncodeMultiline(newQuestion.Question).ToString();
+            newQuestion.Answer = Library.Database.Helpers.HtmlHelper.HtmlEncodeMultiline(newQuestion.Answer).ToString();
             saving = true;
             this.StateHasChanged();
             await Task.Delay(100);

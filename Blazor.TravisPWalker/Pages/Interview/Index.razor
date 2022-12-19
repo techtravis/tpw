@@ -3,9 +3,6 @@
 @using System.Text.Json
 @using Library.Database.Auth
 @using Library.Database.Auth.Models
-@using Library.Database.TableModels
-@using Library.Database.ViewModels
-@using System.Net.Http.Headers
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager navManager
 @inject IConfiguration _configuration
@@ -27,10 +24,10 @@
         {
             <div class="wrapper wrapper-content">
                 <div class="row">
-                    <div class="col-lg-12">
+                    <div class="col-lg-12" style="max-width:900px;">
                         <div class="ibox collapsed border-bottom">
                             <div class="ibox-title">
-                                <h5>@question.Question</h5>
+                                <h5><strong>@((MarkupString)@question.Question)</strong></h5>
                                 <div class="ibox-tools">
                                     <a class="collapse-link">
                                         <i class="fa fa-chevron-up"></i>
@@ -38,11 +35,18 @@
                                 </div>
                             </div>
                             <div class="ibox-content" style="display: none;">
-                                @question.Answer
+                                @((MarkupString)@question.Answer)
                             </div>
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-1">
+                        <div class="mb-3 d-grid gap-2">
+                            <button @onclick="GetQuestion" class="btn btn-primary">Next Question</button>
+                        </div>
+                    </div>                    
+                </div>                
             </div>
         }        
     </Authorized>
@@ -72,43 +76,48 @@
     {
         if (firstRender)
         {
-            loadingQuestion = true;
+            await GetQuestion();   
+        }
+        
+        base.OnAfterRender(firstRender);
+    }
+
+    protected async Task GetQuestion()
+    {
+        loadingQuestion = true;
+        this.StateHasChanged();
+        await Task.Delay(100);
+
+        var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
+        TokenViewModel tvm = await blzrAuthStateProvider.GetUserSessionAsync();
+        string apiUrl = _configuration.GetValue<string>("URLS:api");
+        string blazorUrl = _configuration.GetValue<string>("URLS:blazor");
+        UserToken userToken = new UserToken() { AccessToken = tvm.accessToken, RefreshToken = tvm.refreshToken, Audience = blazorUrl };
+
+        TokenViewModel? apiTvm = _tokenService.GetTokenForAudience(tvm.accessToken, tvm.refreshToken, apiUrl);
+        if (apiTvm != null)
+        {
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiTvm.accessToken);
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //GET Method
+            HttpResponseMessage response = await client.GetAsync($"{apiUrl}/api/Interview/getrandomquestion");
+            if (response.IsSuccessStatusCode)
+            {
+                question = await response.Content.ReadFromJsonAsync<InterviewPrepQuestion>();
+            }
+            else
+            {
+                Console.WriteLine("Internal server Error");
+            }
+
+
+            loadingQuestion = false;
             this.StateHasChanged();
             await Task.Delay(100);
-
-            var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
-            TokenViewModel tvm = await blzrAuthStateProvider.GetUserSessionAsync();
-            string apiUrl = _configuration.GetValue<string>("URLS:api");
-            string blazorUrl = _configuration.GetValue<string>("URLS:blazor");
-            UserToken userToken = new UserToken() { AccessToken = tvm.accessToken, RefreshToken = tvm.refreshToken, Audience = blazorUrl };
-
-            TokenViewModel? apiTvm = _tokenService.GetTokenForAudience(tvm.accessToken, tvm.refreshToken, apiUrl);
-            if (apiTvm != null)
-            {
-                HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiTvm.accessToken);
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                //GET Method
-                HttpResponseMessage response = await client.GetAsync($"{apiUrl}/api/Interview/getrandomquestion");
-                if (response.IsSuccessStatusCode)
-                {
-                    question = await response.Content.ReadFromJsonAsync<InterviewPrepQuestion>();
-                }
-                else
-                {
-                    Console.WriteLine("Internal server Error");
-                }
-                
-
-                loadingQuestion = false;
-                this.StateHasChanged();
-                await Task.Delay(100);
-            }
-            await jsRuntime.InvokeVoidAsync("collapseLinkOnClick");
         }
-       
-        base.OnAfterRender(firstRender);
+        await jsRuntime.InvokeVoidAsync("collapseLinkOnClick");
     }
 
 }

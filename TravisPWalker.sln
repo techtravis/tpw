@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Database", "Library
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "api.travispwalker", "api.travispwalker\api.travispwalker.csproj", "{A7C74DB1-F39D-409B-B94F-9FBB390C4008}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.TravisPWalker", "Blazor.TravisPWalker\Blazor.TravisPWalker.csproj", "{5E3C9AE8-3061-4F85-BEE8-81E8262994B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.TravisPWalker", "Blazor.TravisPWalker\Blazor.TravisPWalker.csproj", "{5E3C9AE8-3061-4F85-BEE8-81E8262994B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
