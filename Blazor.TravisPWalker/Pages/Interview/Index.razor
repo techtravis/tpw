@@ -102,7 +102,7 @@
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             //GET Method
-            HttpResponseMessage response = await client.GetAsync($"{apiUrl}/api/Interview/getrandomquestion");
+            HttpResponseMessage response = await client.GetAsync($"{apiUrl}/api/Interview/get-random-question");
             if (response.IsSuccessStatusCode)
             {
                 question = await response.Content.ReadFromJsonAsync<InterviewPrepQuestion>();

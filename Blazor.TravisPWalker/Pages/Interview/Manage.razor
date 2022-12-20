@@ -5,76 +5,131 @@
 @inject ITokenService _tokenService
 <h3>Manage</h3>
 
-<AuthorizeView>
-    <Authorized>
-        <div class="row mb-2">
-            <div class="col-12">
-                Report with all questions here...
-            </div>
-        </div>        
-    </Authorized>
-    <NotAuthorized>
-        <div class="row">
-            You do not have permission to view this data
-        </div>
-    </NotAuthorized>
-</AuthorizeView>
-
-<AuthorizeView Roles="God">
-    <Authorized>
-        @if (saving)
-        {
-            <div class="container h-100">
-                <div class="d-flex justify-content-md-center align-items-center vh-100">
-                    <img src="images/Loading_2.gif" />
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="row mb-2">
-                <div class="col-2">
-                    <h5>Question:</h5>
-                </div>
-                <div class="col-10">
-                    <textarea @bind="newQuestion.Question" class="form-control" placeholder="Question Text" aria-required="true" rows="3" />
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-2">
-                    <h5>Answer:</h5>
-                </div>
-                <div class="col-10">
-                    <textarea @bind="newQuestion.Answer" class="form-control" placeholder="Answer Text" aria-required="true" rows="6" />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-2">
-                    <div class="mb-3">
-                        <button @onclick="SaveQuestion" class="btn btn-primary">Save</button>
+<div class="wrapper wrapper-content">
+    <div class="ibox mb-5">
+        <AuthorizeView>
+            <Authorized>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <QuestionTable OnQuestionSelected="QuestionSelected"></QuestionTable>
                     </div>
                 </div>
-                <div class="col-10">
+            </Authorized>
+            <NotAuthorized>
+                <div class="row">
+                    You do not have permission to view this data
                 </div>
-            </div>
-        }        
-    </Authorized>
-</AuthorizeView>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</div>
+
+
+<div class="wrapper wrapper-content">
+    <div class="ibox">
+        <AuthorizeView Roles="God">
+            <Authorized>
+                @if (loadingData)
+                {
+                    <div class="container h-100">
+                        <div class="d-flex justify-content-md-center align-items-center vh-100">
+                            <img src="images/Loading_2.gif" />
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="row mb-2">
+                        <div class="col-2">
+                            <h5>Question:</h5>
+                        </div>
+                        <div class="col-10">
+                            <textarea @bind="newQuestion.Question" class="form-control" placeholder="Question Text" aria-required="true" rows="3" />
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-2">
+                            <h5>Answer:</h5>
+                        </div>
+                        <div class="col-10">
+                            <textarea @bind="newQuestion.Answer" class="form-control" placeholder="Answer Text" aria-required="true" rows="6" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2">
+                            <div class="mb-3">
+                                <button @onclick="SaveQuestion" class="btn btn-primary">Save</button>
+                            </div>
+                        </div>
+                        <div class="col-10">
+                        </div>
+                    </div>
+                }
+            </Authorized>
+        </AuthorizeView>
+    </div>
+</div>
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
 
     private InterviewQuestion newQuestion = new InterviewQuestion();
-    private bool saving { get; set; } = false;
+    private bool loadingData { get; set; } = false;
+
+    public async void QuestionSelected(string questionID)
+    {
+        newQuestion = new InterviewQuestion() { Answer = "", Question = "", QuestionId = questionID };
+        if (!String.IsNullOrWhiteSpace(newQuestion.QuestionId))
+        {
+            loadingData = true;
+            this.StateHasChanged();
+            await Task.Delay(100);
+            var authState = await authenticationState;
+            if (authState.User.Identity?.Name != null)
+            {
+                var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
+                TokenViewModel tvm = await blzrAuthStateProvider.GetUserSessionAsync();
+                string apiUrl = _configuration.GetValue<string>("URLS:api");
+
+                TokenViewModel? apiTvm = _tokenService.GetTokenForAudience(tvm.accessToken, tvm.refreshToken, apiUrl);
+                if (apiTvm != null)
+                {
+                    HttpClient client = new HttpClient();
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiTvm.accessToken);
+                    string questionModel = JsonSerializer.Serialize(newQuestion);
+                    byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(questionModel);
+
+                    var content = new ByteArrayContent(messageBytes);
+                    content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                    var response = await client.PostAsync($"{apiUrl}/api/Interview/return-question-by-id", content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        newQuestion = await response.Content.ReadFromJsonAsync<InterviewQuestion>();
+                        newQuestion.Question = Library.Database.Helpers.HtmlHelper.HtmlDecodeMultiline(newQuestion.Question).ToString();
+                        newQuestion.Answer = Library.Database.Helpers.HtmlHelper.HtmlDecodeMultiline(newQuestion.Answer).ToString();
+                        loadingData = false;
+                        this.StateHasChanged();
+                        await Task.Delay(100);
+                        return;
+                    }
+                }
+            }
+        }
+        loadingData = false;
+        newQuestion = new InterviewQuestion();
+        this.StateHasChanged();
+        await Task.Delay(100);
+    }
 
     private async void SaveQuestion()
     {
-        if(!String.IsNullOrWhiteSpace(newQuestion.Question) && !String.IsNullOrWhiteSpace(newQuestion.Answer))
+        if (!String.IsNullOrWhiteSpace(newQuestion.Question) && !String.IsNullOrWhiteSpace(newQuestion.Answer))
         {
             newQuestion.Question = Library.Database.Helpers.HtmlHelper.HtmlEncodeMultiline(newQuestion.Question).ToString();
             newQuestion.Answer = Library.Database.Helpers.HtmlHelper.HtmlEncodeMultiline(newQuestion.Answer).ToString();
-            saving = true;
+            loadingData = true;
             this.StateHasChanged();
             await Task.Delay(100);
 
@@ -85,10 +140,9 @@
                 TokenViewModel tvm = await blzrAuthStateProvider.GetUserSessionAsync();
                 string apiUrl = _configuration.GetValue<string>("URLS:api");
                 string blazorUrl = _configuration.GetValue<string>("URLS:blazor");
-                UserToken userToken = new UserToken() { AccessToken = tvm.accessToken, RefreshToken = tvm.refreshToken, Audience = blazorUrl };
 
                 TokenViewModel? apiTvm = _tokenService.GetTokenForAudience(tvm.accessToken, tvm.refreshToken, apiUrl);
-                if(apiTvm != null)
+                if (apiTvm != null)
                 {
                     HttpClient client = new HttpClient();
                     client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiTvm.accessToken);
@@ -108,7 +162,7 @@
             }
         }
 
-        saving = false;
+        loadingData = false;
         this.StateHasChanged();
         return;
     }

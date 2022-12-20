@@ -11,8 +11,12 @@
         <div class="top-row px-4">
             <AuthorizeView>
                 <Authorized>
-                    <a href="#">Hello, @context.User?.Identity?.Name</a>
-                    <a href="logout">Logout</a>
+                    <NavLink class="nav-link" href="#">
+                        <span aria-hidden="true"></span> Hello, @context.User?.Identity?.Name
+                    </NavLink>
+                    <NavLink class="nav-link" href="logout">
+                        <span aria-hidden="true"></span> Logout
+                    </NavLink>
                 </Authorized>
                 <NotAuthorized>
                     <NavLink class="nav-link" href="login">
@@ -20,8 +24,10 @@
                     </NavLink>
                 </NotAuthorized>
             </AuthorizeView>
-            
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+
+            <NavLink class="nav-link" href="https://docs.microsoft.com/aspnet/">
+                <span aria-hidden="true"></span> About
+            </NavLink>
         </div>
 
         <article class="content px-4">

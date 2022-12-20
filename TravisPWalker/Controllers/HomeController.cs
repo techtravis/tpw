@@ -13,6 +13,7 @@ using System.Xml.Linq;
 using TravisPWalker.Models;
 using Library.Database.Auth.Models;
 using System.Text.Json;
+using System;
 
 namespace TravisPWalker.Controllers
 {
@@ -128,7 +129,17 @@ namespace TravisPWalker.Controllers
                     {
                         foreach(var claim in principal.Claims)
                         {
-                            result += $"</br>Your Claim for {claim.Type} is: {claim.Value}";
+                            if(claim.Type == "exp")
+                            {
+                                DateTime expireTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+                                expireTime = expireTime.AddSeconds(Double.Parse(claim.Value));
+                                result += $"</br>Your Claim for {claim.Type} is: {expireTime} UTC | {expireTime.ToLocalTime()} LOCAL | epoch:{claim.Value}";
+                            }
+                            else
+                            {
+                                result += $"</br>Your Claim for {claim.Type} is: {claim.Value}";
+                            }
+                            
                         }
                     }                    
 

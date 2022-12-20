@@ -1,7 +1,95 @@
 ﻿@page "/Interview/QuestionTable"
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+@inject IConfiguration _configuration
+@inject ITokenService _tokenService
 
-<h3>QuestionTable</h3>
+
+@if (questions == null)
+{
+    <div class="container h-100">
+        <div class="d-flex justify-content-md-center align-items-center vh-100">
+            <img src="images/Loading_2.gif" />
+        </div>
+    </div>
+}
+else
+{
+        <DataTable TModel="InterviewPrepQuestion" Items="questions" Styles="TableStyle.Sm">
+        <DataTableColumn TModel="InterviewPrepQuestion" Property="(e) => e.InterviewQuestionId" CustomTitle="Edit" MaxWidth="50" MinWidthHeader="50" MinWidthHeaderUnit="PSC.Blazor.Components.DataTable.Code.Enumerations.CssUnit.Px">
+			<HeaderTemplate Context="title">
+				@title
+			</HeaderTemplate>
+			<RowTemplate Context="question">
+                @if (question.InterviewQuestionId != null)
+				{
+                    <button @onclick="@(q => QuestionSelected(question.InterviewQuestionId))" class="btn btn-primary" style="padding:1px 4px !important;"><small>Edit</small></button>
+				}
+				else
+				{
+					<i class="far fa-times-circle" style="color: red;"></i>
+				}
+			</RowTemplate>
+		</DataTableColumn>
+        <DataTableColumn TModel="InterviewPrepQuestion"
+                    Property="(e) => e.Question"
+                     CustomTitle="Question" />
+        <DataTableColumn TModel="InterviewPrepQuestion"
+                    Property="(e) => e.Answer"
+                     CustomTitle="Answer" />
+    </DataTable>
+}
+
 
 @code {
+    [Parameter] 
+    public EventCallback<string> OnQuestionSelected { get; set; }
 
+    private string questionId;
+    private void QuestionSelected(string qId)
+    {
+        questionId = qId;
+        OnQuestionSelected.InvokeAsync(questionId);        
+    }
+
+    private InterviewPrepQuestion[] questions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        questions = await GetQuestions();
+    }
+
+    protected async Task<InterviewPrepQuestion[]> GetQuestions()
+    {
+        this.StateHasChanged();
+        await Task.Delay(100);
+
+        var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
+        TokenViewModel tvm = await blzrAuthStateProvider.GetUserSessionAsync();
+        string apiUrl = _configuration.GetValue<string>("URLS:api");
+
+        TokenViewModel? apiTvm = _tokenService.GetTokenForAudience(tvm.accessToken, tvm.refreshToken, apiUrl);
+        if (apiTvm != null)
+        {
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiTvm.accessToken);
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //GET Method
+            HttpResponseMessage response = await client.GetAsync($"{apiUrl}/api/Interview/get-all-questions");
+            if (response.IsSuccessStatusCode)
+            {
+                this.StateHasChanged();
+                await Task.Delay(100);
+                return await response.Content.ReadFromJsonAsync<InterviewPrepQuestion[]>();
+            }
+            else
+            {
+                Console.WriteLine("Internal server Error");
+            }
+        }
+        this.StateHasChanged();
+        await Task.Delay(100);
+        return new InterviewPrepQuestion[0];
+    }
 }

@@ -22,7 +22,18 @@
             <td>@claim.Subject?.Name</td>
             <td>@claim.Issuer</td>
             <td>@claim.Type</td>
-            <td>@claim.Value</td>
+            <td>
+                @if (@claim.Type == "exp")
+                {
+                    DateTime expireTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+                    expireTime = expireTime.AddSeconds(Double.Parse(@claim.Value));
+                    @Html.Raw($"{@expireTime.ToString()} UTC </br>{@expireTime.ToLocalTime().ToString()} LOCAL </br>Epoch: {@claim.Value.ToString()}")                    
+                } 
+                else 
+                { 
+                    @claim.Value.ToString(); 
+                }
+            </td>
         </tr>
     }
 </table>

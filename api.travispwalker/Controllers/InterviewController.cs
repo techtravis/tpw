@@ -79,13 +79,47 @@ namespace api.travispwalker.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("return-question-by-id")]
+        [Authorize]
+        public async Task<IActionResult> ReturnQuestionByID([FromBody] InterviewQuestion model)
+        {
+            InterviewPrepQuestion? question;
+            if (!String.IsNullOrWhiteSpace(model.QuestionId))
+            {
+                question = InterviewPrepQuestion.GetById(model.QuestionId, _applicationDbContext, User);
+                if (question != null)
+                {
+                    model.Question = question.Question;
+                    model.Answer = question.Answer;
+
+                    return Ok(model);
+                }
+                else
+                {
+                    return BadRequest("QuestionId not found");
+                }
+            }
+
+            return BadRequest("QuestionId not provided or not found");
+        }
+
         [HttpGet]
-        [Route("getrandomquestion")]
+        [Route("get-random-question")]
         [Authorize]
         public async Task<IActionResult> GetRandomQuestion()
         {
             InterviewPrepQuestion? question = await Task.FromResult(InterviewPrepQuestion.GetRandom(_applicationDbContext)) ;
             return Ok(question);
+        }
+
+        [HttpGet]
+        [Route("get-all-questions")]
+        [Authorize]
+        public async Task<IActionResult> GetAllQuestions()
+        {
+            InterviewPrepQuestion[] questions = await Task.FromResult(InterviewPrepQuestion.GetAll(_applicationDbContext));
+            return Ok(questions);
         }
 
     }

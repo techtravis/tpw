@@ -57,5 +57,11 @@ namespace Library.Database.TableModels
             InterviewPrepQuestion interviewPrepQuestion = questions.FirstOrDefault<InterviewPrepQuestion>();
             return interviewPrepQuestion;
         }
+
+        public static InterviewPrepQuestion[] GetAll(ApplicationDbContext context)
+        {
+            var questions = context.InterviewPrepQuestion.ToArray();
+            return questions;
+        }
     }
 }
