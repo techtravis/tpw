@@ -53,7 +53,7 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ClockSkew = TimeSpan.Zero,
+        ClockSkew = TimeSpan.FromSeconds(60),
         ValidAudiences = configuration.GetSection("JWT:ValidAudiences").Get<string[]>(),
         ValidIssuers = configuration.GetSection("JWT:ValidIssuers").Get<string[]>(),
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
@@ -128,7 +128,7 @@ app.UseStatusCodePages(async context =>
 
     if (response.StatusCode == (int)HttpStatusCode.Unauthorized)
     {
-        response.Redirect("/Account/Login");
+        response.Redirect($"/Account/RefreshTokenAccess?redirectURL={path}");
     }
     else
     {

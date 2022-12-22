@@ -101,10 +101,9 @@ namespace Library.Database.Auth
 
                 return principal;
             }
-            catch(Exception ex) 
+            catch 
             {
                 throw new SecurityTokenException("Invalid token");
-                //return null;
             }
             
         }
@@ -114,6 +113,28 @@ namespace Library.Database.Auth
             int days = 0;
             int.TryParse(JwtRefreshTokenValidityInDays, out days);
             return days;
+        }
+
+        public TokenViewModel? RefreshToken(string curToken, string curRefreshToken, string audience)
+        {
+            UserToken userToken = new UserToken() { AccessToken = curToken, RefreshToken = curRefreshToken, Audience = audience };
+
+            HttpClient client = new HttpClient();
+            string usermodel = JsonSerializer.Serialize(userToken);
+            byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(usermodel);
+            var content = new ByteArrayContent(messageBytes);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            var response = client.PostAsync($"{JwtIssuer}/api/Authenticate/refresh-token", content).Result;
+            string result = "";
+            if (response.IsSuccessStatusCode)
+            {
+                result = response.Content.ReadAsStringAsync().Result;
+                TokenViewModel? tokenModel = JsonSerializer.Deserialize<TokenViewModel>(result);
+
+                return tokenModel;
+            }
+            return null;
         }
 
         public TokenViewModel? GetTokenForAudience(string curToken, string curRefreshToken, string audience)
@@ -132,12 +153,17 @@ namespace Library.Database.Auth
             {
                 result = response.Content.ReadAsStringAsync().Result;
                 TokenViewModel? tokenModel = JsonSerializer.Deserialize<TokenViewModel>(result);
-
-                ClaimsPrincipal? principal = GetPrincipalFromExpiredToken(tokenModel?.accessToken);
+                //ClaimsPrincipal? principal = GetPrincipalFromExpiredToken(tokenModel?.accessToken);
 
                 return tokenModel;
             }
-            return null;
+            else
+            {
+                TokenViewModel? tokenModel = RefreshToken(curToken, curRefreshToken, audience);
+                //ClaimsPrincipal? principal = GetPrincipalFromExpiredToken(tokenModel?.accessToken);
+
+                return tokenModel;
+            }
         }
 
     }

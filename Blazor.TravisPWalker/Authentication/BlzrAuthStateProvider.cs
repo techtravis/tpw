@@ -30,7 +30,7 @@ namespace Blazor.TravisPWalker.Authentication
                     return await Task.FromResult(new AuthenticationState(_anonymous));
                 }
 
-                // Feel like this should use the token service.. will circle back
+                // should probably call the API instead of the library directly. But just showing it can work this way as well
                 var claimsPrincipal = _tokenService.GetPrincipalFromToken(userSession.accessToken);                
                 var state = new AuthenticationState(claimsPrincipal == null ? new ClaimsPrincipal() : claimsPrincipal);
                 NotifyAuthenticationStateChanged(Task.FromResult(state));

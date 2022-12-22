@@ -219,7 +219,7 @@ namespace api.travispwalker.Controllers
         [Authorize]
         [HttpPost]
         [Route("auth-check")]
-        public async Task<IActionResult> AuthCHeck()
+        public async Task<IActionResult> AuthCheck()
         {
             if(User.IsInRole("God") || User.IsInRole("Admin") || User.IsInRole("Advanced") || User.IsInRole("Basic"))
             {

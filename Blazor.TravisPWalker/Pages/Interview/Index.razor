@@ -12,19 +12,19 @@
 
 <AuthorizeView>
     <Authorized>
-        @if (loadingQuestion)
-        {
-            <div class="container h-100">
-                <div class="d-flex justify-content-md-center align-items-center vh-100">
-                    <img src="images/Loading_2.gif" />
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="wrapper wrapper-content">
-                <div class="row">
-                    <div class="col-lg-12" style="max-width:900px;">
+        <div class="wrapper wrapper-content">
+            <div class="row">
+                <div class="col-lg-12" style="max-width:900px;">
+                    @if (loadingQuestion)
+                    {
+                        <div class="container h-25">
+                            <div class="d-flex justify-content-md-center align-items-center">
+                                <img src="images/Loading_2.gif" />
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
                         <div class="ibox collapsed border-bottom">
                             <div class="ibox-title">
                                 <h5><strong>@((MarkupString)@question.Question)</strong></h5>
@@ -38,17 +38,17 @@
                                 @((MarkupString)@question.Answer)
                             </div>
                         </div>
-                    </div>
+                    }                    
                 </div>
-                <div class="row">
-                    <div class="col-1">
-                        <div class="mb-3 d-grid gap-2">
-                            <button @onclick="GetQuestion" class="btn btn-primary">Next Question</button>
-                        </div>
-                    </div>                    
-                </div>                
             </div>
-        }        
+            <div class="row">
+                <div class="col-1">
+                    <div class="mb-3 d-grid gap-2">
+                        <button @onclick="GetQuestion" class="btn btn-primary">Next Question</button>
+                    </div>
+                </div>                    
+            </div>                
+        </div>       
     </Authorized>
     <NotAuthorized>
         <div class="row">
@@ -94,7 +94,7 @@
         string blazorUrl = _configuration.GetValue<string>("URLS:blazor");
         UserToken userToken = new UserToken() { AccessToken = tvm.accessToken, RefreshToken = tvm.refreshToken, Audience = blazorUrl };
 
-        TokenViewModel? apiTvm = _tokenService.GetTokenForAudience(tvm.accessToken, tvm.refreshToken, apiUrl);
+        TokenViewModel? apiTvm = _tokenService.GetTokenForAudience(tvm.accessToken, tvm.refreshToken, blazorUrl);
         if (apiTvm != null)
         {
             HttpClient client = new HttpClient();

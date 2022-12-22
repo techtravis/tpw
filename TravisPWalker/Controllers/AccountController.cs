@@ -55,6 +55,44 @@ namespace TravisPWalker.Controllers
 
         [AllowAnonymous]
         [HttpGet]
+        public IActionResult RefreshTokenAccess(string redirectURL)
+        {
+            UserToken tokenModel = new UserToken();
+            tokenModel.AccessToken = _httpContextAccessor.HttpContext?.Session?.GetString("AccessToken");
+            tokenModel.RefreshToken = _httpContextAccessor.HttpContext?.Session?.GetString("RefreshToken");
+            tokenModel.Audience = _configuration.GetValue<string>("JWT:Audience");
+
+            if(tokenModel.AccessToken != null && tokenModel.RefreshToken != null)
+            {
+                HttpClient client = new HttpClient();
+
+                string apiUrl = _configuration.GetValue<string>("URLS:api");
+                string model = JsonSerializer.Serialize(tokenModel);
+                byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(model);
+                var content = new ByteArrayContent(messageBytes);
+                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                var response = client.PostAsync($"{apiUrl}/api/Authenticate/refresh-token", content).Result;
+                string result;
+                if (response.IsSuccessStatusCode)
+                {
+                    result = response.Content.ReadAsStringAsync().Result;
+                    TokenViewModel? token = JsonSerializer.Deserialize<TokenViewModel>(result);
+                    if (token != null)
+                    {
+                        _httpContextAccessor.HttpContext?.Session.Set("AccessToken", Encoding.ASCII.GetBytes(token.accessToken));
+                        _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(token.refreshToken));
+                        _httpContextAccessor.HttpContext?.Session.Set("RefreshTokenExpiryTime", Encoding.ASCII.GetBytes(token.expiration));
+                        return Redirect(redirectURL);
+                    }
+                }
+            }
+
+            return RedirectToAction("Login", "Account");
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
         public IActionResult TokenAccess(string token, string redirectURL)
         {
             TokenViewModel? tokenModel = JsonSerializer.Deserialize<TokenViewModel>(token);
