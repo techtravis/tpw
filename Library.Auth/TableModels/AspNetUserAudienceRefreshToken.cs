@@ -32,26 +32,37 @@ namespace Library.Database.TableModels
 
         public static void InsertOrUpdate(ApplicationDbContext context, SecureUser secureUser)
         {
-            AspNetUserAudienceRefreshToken? refreshModel = context.AspNetUserAudienceRefreshTokens.FirstOrDefault(r => r.SecureUser.Id == secureUser.Id && r.Audience == secureUser.LastAudience);
-            if (refreshModel == null)
+            // if the refresh token is null assume logout of all resources
+            if(secureUser.RefreshToken== null)
             {
-                refreshModel = new AspNetUserAudienceRefreshToken() 
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    SecureUser = secureUser,
-                    Audience = secureUser.LastAudience,
-                    RefreshToken = secureUser.RefreshToken,
-                    RefreshTokenExpiryTime = secureUser.RefreshTokenExpiryTime,
-                };
-
-                context.Add<AspNetUserAudienceRefreshToken>(refreshModel);                
+                var ids = from w in context.AspNetUserAudienceRefreshTokens where w.SecureUser.Id == secureUser.Id select w.Id;
+                context.AspNetUserAudienceRefreshTokens.RemoveRange(from id in ids.AsEnumerable() select new AspNetUserAudienceRefreshToken { Id = id });
             }
             else
             {
-                context.AspNetUserAudienceRefreshTokens.Attach(refreshModel);
-                refreshModel.RefreshToken = secureUser.RefreshToken;
-                refreshModel.RefreshTokenExpiryTime = secureUser.RefreshTokenExpiryTime;
+                // else save or create refreshtoken record
+                AspNetUserAudienceRefreshToken? refreshModel = context.AspNetUserAudienceRefreshTokens.FirstOrDefault(r => r.SecureUser.Id == secureUser.Id && r.Audience == secureUser.LastAudience);
+                if (refreshModel == null)
+                {
+                    refreshModel = new AspNetUserAudienceRefreshToken()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        SecureUser = secureUser,
+                        Audience = secureUser.LastAudience,
+                        RefreshToken = secureUser.RefreshToken,
+                        RefreshTokenExpiryTime = secureUser.RefreshTokenExpiryTime,
+                    };
+
+                    context.Add<AspNetUserAudienceRefreshToken>(refreshModel);
+                }
+                else
+                {
+                    context.AspNetUserAudienceRefreshTokens.Attach(refreshModel);
+                    refreshModel.RefreshToken = secureUser.RefreshToken;
+                    refreshModel.RefreshTokenExpiryTime = secureUser.RefreshTokenExpiryTime;
+                }
             }
+            
             context.SaveChanges();            
         }
 
