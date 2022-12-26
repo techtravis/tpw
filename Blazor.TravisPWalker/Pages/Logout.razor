@@ -3,6 +3,7 @@
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager navManager
 @inject IConfiguration _configuration
+@inject ITokenService _tokenService
 
 <h3>Logout</h3>
 
@@ -10,8 +11,34 @@
     protected override async Task OnInitializedAsync()
     {
         var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
+        TokenViewModel tvm = await blzrAuthStateProvider.GetUserSessionAsync();
+        var user = await blzrAuthStateProvider.GetAuthenticationStateAsync();
+        string apiUrl = _configuration.GetValue<string>("URLS:api");
+
+        TokenViewModel? apiTvm = _tokenService.GetTokenForAudience(tvm.accessToken, tvm.refreshToken, apiUrl);
+        if (apiTvm != null)
+        {
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiTvm.accessToken);
+            string? username = user.User?.Identity?.Name;
+            if(!String.IsNullOrEmpty(username))
+            {
+                byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes("");
+                var content = new ByteArrayContent(messageBytes);
+                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                var response = await client.PostAsync($"{apiUrl}/api/revoke/{username}", content);
+                if (response.IsSuccessStatusCode)
+                {
+                    // do we need to do anything?
+                }
+            }
+            
+        }
+
         await blzrAuthStateProvider.UpdateAuthenticationState(null);
         navManager.NavigateTo("/", true);
+        
 
         return;
     }

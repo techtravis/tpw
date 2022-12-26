@@ -183,7 +183,7 @@ namespace api.travispwalker.Controllers
         [Route("revoke/{username}")]
         public async Task<IActionResult> Revoke(string username)
         {
-            if (User.IsInRole("God"))
+            if (User.IsInRole("God") || User.Identity?.Name == username)
             {
                 var user = await _userManager.FindByNameAsync(username);
                 if (user == null) return BadRequest("Invalid user name");

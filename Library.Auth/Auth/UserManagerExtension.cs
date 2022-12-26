@@ -59,7 +59,6 @@ namespace Microsoft.AspNetCore.Identity
             
             AspNetUserAudienceRefreshToken.InsertOrUpdate(ctx, user);
 
-
             return await Store.UpdateAsync(user, CancellationToken);
         }
 

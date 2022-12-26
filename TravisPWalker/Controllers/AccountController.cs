@@ -106,12 +106,12 @@ namespace TravisPWalker.Controllers
 
                     if (String.IsNullOrEmpty(redirectURL))
                     {
-                        return Redirect("/Home/SecureLanding");
+                        return RedirectToAction("SecureLanding", "Home");
                     }                 
                 }
             }
 
-            return Redirect("Home/Index");
+            return RedirectToAction("Index", "Home");
         }
 
         [AllowAnonymous]
@@ -140,7 +140,7 @@ namespace TravisPWalker.Controllers
                         _httpContextAccessor.HttpContext?.Session.Set("AccessToken", Encoding.ASCII.GetBytes(token.accessToken));
                         _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(token.refreshToken));
                         _httpContextAccessor.HttpContext?.Session.Set("RefreshTokenExpiryTime", Encoding.ASCII.GetBytes(token.expiration));
-                        return Redirect("/Home/SecureLanding");
+                        return RedirectToAction("SecureLanding", "Home");
                     }                    
                 }                
             }            
@@ -174,7 +174,7 @@ namespace TravisPWalker.Controllers
             {
                 // This needs to be a redirect so that the browser performs a new
                 // request and the identity for the user gets updated.
-                return RedirectToPage("Home/Index");
+                return RedirectToAction("Index", "Home");
             }
         }
 

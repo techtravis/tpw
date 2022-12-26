@@ -85,6 +85,8 @@ namespace TravisPWalker.Controllers
             {
                 result = response.Content.ReadAsStringAsync().Result;
                 string blazorUrl = _configuration.GetValue<string>("URLS:blazor");
+                //probably shouldn't pass the Token in the URL
+                // should send it in form data..
                 return Redirect($"{blazorUrl}/tokenaccess?Token={result}&RedirectURL=fetchdata");
             }
 
@@ -106,7 +108,7 @@ namespace TravisPWalker.Controllers
 
             if (token == null)
             {
-                return (RedirectToAction("Index"));
+                return RedirectToAction("Index", "Home");
             }
 
             ViewBag.Message = BuildTokenMessage(token);
@@ -187,7 +189,7 @@ namespace TravisPWalker.Controllers
             // write html to the database for the user
             AspNetUserHomePage.InsertOrUpdate(model.Html, _ApplicationDbContext, User);
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", "Home");
         }
 
         [Authorize]
