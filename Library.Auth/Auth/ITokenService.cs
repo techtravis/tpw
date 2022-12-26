@@ -11,11 +11,7 @@ namespace Library.Database.Auth
 {
     public interface ITokenService
     {
-        JwtSecurityToken CreateToken(List<Claim> authClaims, string audience);
-        string GenerateRefreshToken();
-        ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token);
-        ClaimsPrincipal? GetPrincipalFromToken(string? token, bool validateAudience = true);
-        int GetRefreshTokenValidityDays();
+        ClaimsPrincipal? GetPrincipalFromToken(string? token, bool validateAudience = true, bool notExpired = true);
         TokenViewModel? GetTokenForAudience(string curToken, string curRefreshToken, string audience);
     }
 }

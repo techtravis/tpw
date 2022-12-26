@@ -14,11 +14,11 @@ namespace TravisPWalker.Areas.Identity.Pages.Account.Manage
 {
     public class Disable2faModel : PageModel
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly ILogger<Disable2faModel> _logger;
 
         public Disable2faModel(
-            UserManager<Library.Database.Auth.SecureUser> userManager,
+            UserManagerExtension userManager,
             ILogger<Disable2faModel> logger)
         {
             _userManager = userManager;

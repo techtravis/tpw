@@ -14,7 +14,7 @@ namespace Library.Database.Auth
     // good description at  https://stackoverflow.com/questions/50401190/asp-net-core-identity-use-aspnetuserclaims-or-aspnetroleclaims
     public static class Seeder
     {
-        public static async Task SeedRolesAsync(UserManager<Library.Database.Auth.SecureUser> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task SeedRolesAsync(UserManagerExtension userManager, RoleManager<IdentityRole> roleManager)
         {
             //Seed Roles
             foreach(var role in Enum.GetValues(typeof(Enumerators.Roles)).Cast<Enumerators.Roles>())
@@ -27,7 +27,7 @@ namespace Library.Database.Auth
             await userManager.AddToRoleAsync(user, Library.Database.Auth.Enumerators.Roles.God.ToString());
         }
 
-        public static async Task SeedRoleClaimsAsync(UserManager<Library.Database.Auth.SecureUser> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task SeedRoleClaimsAsync(UserManagerExtension userManager, RoleManager<IdentityRole> roleManager)
         {
             // when we make RoleClaims there is no built in method to prevent duplicats
             // so we need to take a little extra care by getting the list of claims for the role

@@ -19,10 +19,10 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
 {
     public class ForgotPasswordModel : PageModel
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly IEmailSender _emailSender;
 
-        public ForgotPasswordModel(UserManager<Library.Database.Auth.SecureUser> userManager, IEmailSender emailSender)
+        public ForgotPasswordModel(UserManagerExtension userManager, IEmailSender emailSender)
         {
             _userManager = userManager;
             _emailSender = emailSender;

@@ -15,12 +15,12 @@ namespace TravisPWalker.Areas.Identity.Pages.Account.Manage
 {
     public class DeletePersonalDataModel : PageModel
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
         private readonly ILogger<DeletePersonalDataModel> _logger;
 
         public DeletePersonalDataModel(
-            UserManager<Library.Database.Auth.SecureUser> userManager,
+            UserManagerExtension userManager,
             SignInManager<Library.Database.Auth.SecureUser> signInManager,
             ILogger<DeletePersonalDataModel> logger)
         {

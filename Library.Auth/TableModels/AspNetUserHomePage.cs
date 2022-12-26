@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace Library.Database.Auth.TableModels
+namespace Library.Database.TableModels
 {
     public class AspNetUserHomePage
     {

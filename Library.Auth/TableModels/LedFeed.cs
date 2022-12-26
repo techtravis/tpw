@@ -1,5 +1,4 @@
 ﻿using Library.Database.Auth;
-using Library.Database.Auth.TableModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

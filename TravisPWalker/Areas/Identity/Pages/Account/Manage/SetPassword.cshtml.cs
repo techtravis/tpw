@@ -14,11 +14,11 @@ namespace TravisPWalker.Areas.Identity.Pages.Account.Manage
 {
     public class SetPasswordModel : PageModel
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
 
         public SetPasswordModel(
-            UserManager<Library.Database.Auth.SecureUser> userManager,
+            UserManagerExtension userManager,
             SignInManager<Library.Database.Auth.SecureUser> signInManager)
         {
             _userManager = userManager;

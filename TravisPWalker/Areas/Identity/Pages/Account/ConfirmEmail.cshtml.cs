@@ -17,9 +17,9 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
 {
     public class ConfirmEmailModel : PageModel
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
 
-        public ConfirmEmailModel(UserManager<Library.Database.Auth.SecureUser> userManager)
+        public ConfirmEmailModel(UserManagerExtension userManager)
         {
             _userManager = userManager;
         }

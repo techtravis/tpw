@@ -18,10 +18,10 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
     [AllowAnonymous]
     public class RegisterConfirmationModel : PageModel
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly IEmailSender _sender;
 
-        public RegisterConfirmationModel(UserManager<Library.Database.Auth.SecureUser> userManager, IEmailSender sender)
+        public RegisterConfirmationModel(UserManagerExtension userManager, IEmailSender sender)
         {
             _userManager = userManager;
             _sender = sender;

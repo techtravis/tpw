@@ -22,6 +22,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 // For Asp.net Identity
 builder.Services.AddIdentity<SecureUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddUserManager<UserManagerExtension>()
     .AddDefaultTokenProviders();
 
 // Add services to the container.
@@ -33,31 +34,6 @@ builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddScoped<AuthenticationStateProvider, BlzrAuthStateProvider>();
 builder.Services.AddSingleton<WeatherForecastService>();
-
-//// Adding JWT Auth
-//builder.Services.AddAuthentication(options =>
-//{
-//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-//    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-//})
-//// Adding Jwt Bearer
-//.AddJwtBearer(options =>
-//{
-//    options.SaveToken = true;
-//    options.RequireHttpsMetadata = Convert.ToBoolean(configuration["JWT:RequireHttpsMetadata"]);
-//    options.TokenValidationParameters = new TokenValidationParameters()
-//    {
-//        ValidateIssuer = true,
-//        ValidateAudience = true,
-//        ValidateLifetime = true,
-//        ValidateIssuerSigningKey = true,
-//        ClockSkew = TimeSpan.Zero,
-//        ValidAudiences = configuration.GetSection("JWT:ValidAudiences").Get<string[]>(),
-//        ValidIssuers = configuration.GetSection("JWT:ValidIssuers").Get<string[]>(),
-//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
-//    };
-//});
 
 var app = builder.Build();
 

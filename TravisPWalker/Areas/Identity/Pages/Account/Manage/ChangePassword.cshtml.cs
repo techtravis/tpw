@@ -15,12 +15,12 @@ namespace TravisPWalker.Areas.Identity.Pages.Account.Manage
 {
     public class ChangePasswordModel : PageModel
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
         private readonly ILogger<ChangePasswordModel> _logger;
 
         public ChangePasswordModel(
-            UserManager<Library.Database.Auth.SecureUser> userManager,
+            UserManagerExtension userManager,
             SignInManager<Library.Database.Auth.SecureUser> signInManager,
             ILogger<ChangePasswordModel> logger)
         {

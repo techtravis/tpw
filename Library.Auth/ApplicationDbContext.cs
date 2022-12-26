@@ -1,4 +1,4 @@
-﻿using Library.Database.Auth.TableModels;
+﻿using Library.Database.TableModels;
 using Library.Database.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -24,6 +24,7 @@ namespace Library.Database.Auth
         public DbSet<LedFeed> LedFeed { get; set; }
         public DbSet<InterviewPrepQuestion> InterviewPrepQuestion { get; set; }
         public DbSet<AppException> AppException { get; set; }
+        public DbSet<AspNetUserAudienceRefreshToken> AspNetUserAudienceRefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -34,6 +35,7 @@ namespace Library.Database.Auth
             builder.Entity<LedFeed>().ToTable("LedFeed");
             builder.Entity<InterviewPrepQuestion>().ToTable("InterviewPrepQuestion");
             builder.Entity<AppException>().ToTable("AppException");
+            builder.Entity<AspNetUserAudienceRefreshToken>().ToTable("AspNetUserAudienceRefreshToken");
         }
     }
 

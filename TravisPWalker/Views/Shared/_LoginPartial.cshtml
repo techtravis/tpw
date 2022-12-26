@@ -1,7 +1,7 @@
 ﻿@using Library.Database.Auth.Models;
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<Library.Database.Auth.SecureUser> SignInManager
-@inject UserManager<Library.Database.Auth.SecureUser> UserManager
+@inject UserManagerExtension UserManager
 
 <ul class="navbar-nav">
     @if (@User != null && User.Identity != null && User.Identity.IsAuthenticated == true)

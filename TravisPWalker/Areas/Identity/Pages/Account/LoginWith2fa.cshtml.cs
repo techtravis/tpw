@@ -18,12 +18,12 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
     public class LoginWith2faModel : PageModel
     {
         private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly ILogger<LoginWith2faModel> _logger;
 
         public LoginWith2faModel(
             SignInManager<Library.Database.Auth.SecureUser> signInManager,
-            UserManager<Library.Database.Auth.SecureUser> userManager,
+            UserManagerExtension userManager,
             ILogger<LoginWith2faModel> logger)
         {
             _signInManager = signInManager;

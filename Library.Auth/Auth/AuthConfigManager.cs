@@ -37,11 +37,11 @@ namespace Library.Database.Auth
                 return _configuration["JWT:Issuer"];
             }
         }
-        public string JwtAudience
+        public string[] JwtAudiences
         {
             get
             {
-                return _configuration["JWT:Audience"];
+                return _configuration["JWT:ValidAudiences"].Split(',');
             }
         }
         public string JwtValidMinutes

@@ -1,4 +1,64 @@
-﻿<!DOCTYPE html>
+﻿@using Library.Database.Auth.Models;
+@using Microsoft.AspNetCore.Identity;
+@using Library.Database.Auth;
+@using System.Text;
+@using System.Text.Json;
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor
+@inject Library.Database.Auth.ITokenService _tokenService;
+@inject IConfiguration _configuration
+@inject SignInManager<Library.Database.Auth.SecureUser> SignInManager
+@inject UserManagerExtension UserManager
+
+@{
+    // I recognize this is a hack.. and once I figure out a better way to replace it I will.
+    // Basically if we have a token is within 15 minutes of expiring. We will refresh it so it does not expire
+    // I have tokens set to a 30 minute timeout window
+    string? refreshToken = _httpContextAccessor.HttpContext?.Session?.GetString("RefreshToken");
+    string? exp = User.Claims.Where(c => c.Type == "exp").SingleOrDefault()?.Value;
+    int tokenEpoch;
+    int.TryParse(exp, out tokenEpoch);
+    tokenEpoch = tokenEpoch - 900;
+
+    TimeSpan t = DateTime.UtcNow - new DateTime(1970, 1, 1);
+    int currentEpoch = (int)t.TotalSeconds;
+
+    if(tokenEpoch > 0 && currentEpoch > tokenEpoch && !String.IsNullOrEmpty(refreshToken))
+    {
+        // need to try to refresh the token!
+        UserToken tokenModel = new UserToken();
+        tokenModel.AccessToken = _httpContextAccessor.HttpContext?.Session?.GetString("AccessToken");
+        tokenModel.RefreshToken = _httpContextAccessor.HttpContext?.Session?.GetString("RefreshToken");
+        tokenModel.Audience = _configuration.GetValue<string>("JWT:Audience");
+        if (tokenModel.AccessToken != null && tokenModel.RefreshToken != null)
+        {
+            HttpClient client = new HttpClient();
+
+            string apiUrl = _configuration.GetValue<string>("URLS:api");
+            string model = JsonSerializer.Serialize(tokenModel);
+            byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(model);
+            var content = new ByteArrayContent(messageBytes);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            var response = client.PostAsync($"{apiUrl}/api/Authenticate/refresh-token", content).Result;
+            string result;
+            if (response.IsSuccessStatusCode)
+            {
+                result = response.Content.ReadAsStringAsync().Result;
+                TokenViewModel? token = JsonSerializer.Deserialize<TokenViewModel>(result);
+                if (token != null)
+                {
+                    _httpContextAccessor.HttpContext?.Session.Set("AccessToken", Encoding.ASCII.GetBytes(token.accessToken));
+                    _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(token.refreshToken));
+                    _httpContextAccessor.HttpContext?.Session.Set("RefreshTokenExpiryTime", Encoding.ASCII.GetBytes(token.expiration));
+                }
+            }
+        }
+    }
+}
+
+
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />

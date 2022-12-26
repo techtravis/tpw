@@ -25,14 +25,14 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
     public class RegisterModel : PageModel
     {
         private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly IUserStore<Library.Database.Auth.SecureUser> _userStore;
         private readonly IUserEmailStore<Library.Database.Auth.SecureUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
 
         public RegisterModel(
-            UserManager<Library.Database.Auth.SecureUser> userManager,
+            UserManagerExtension userManager,
             IUserStore<Library.Database.Auth.SecureUser> userStore,
             SignInManager<Library.Database.Auth.SecureUser> signInManager,
             ILogger<RegisterModel> logger,

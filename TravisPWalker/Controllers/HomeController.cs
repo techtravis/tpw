@@ -1,6 +1,5 @@
 ﻿using Library.Database.Auth;
-using Library.Database.Auth.TableModels;
-using Library.Database.Auth;
+using Library.Database.TableModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,12 +13,13 @@ using TravisPWalker.Models;
 using Library.Database.Auth.Models;
 using System.Text.Json;
 using System;
+using Microsoft.AspNetCore.Session;
 
 namespace TravisPWalker.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;        
+        private readonly UserManagerExtension _userManager;        
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly ITokenService _tokenService;
@@ -28,7 +28,7 @@ namespace TravisPWalker.Controllers
 
 
         public HomeController(
-            UserManager<Library.Database.Auth.SecureUser> userManager,
+            UserManagerExtension userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             ITokenService tokenService,
@@ -117,7 +117,7 @@ namespace TravisPWalker.Controllers
         {
             string result = "";
 
-            ClaimsPrincipal? principal = _tokenService.GetPrincipalFromExpiredToken(token);
+            ClaimsPrincipal? principal = _tokenService.GetPrincipalFromToken(token, false, false);
             if (principal != null)
             {
                 var user = _userManager.FindByNameAsync(principal.Identity?.Name).Result;

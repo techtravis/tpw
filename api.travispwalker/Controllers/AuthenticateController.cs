@@ -17,13 +17,13 @@ namespace api.travispwalker.Controllers
     [ApiController]
     public class AuthenticateController : ControllerBase
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly ITokenService _tokenService;
 
         public AuthenticateController(
-            UserManager<Library.Database.Auth.SecureUser> userManager,
+            UserManagerExtension userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             ITokenService tokenService)
@@ -72,11 +72,12 @@ namespace api.travispwalker.Controllers
                 }
 
                 // take all those claims and now wrap it into the token.
-                var accesstoken = _tokenService.CreateToken(authClaims, model.Audience);
-                var refreshToken = _tokenService.GenerateRefreshToken();
+                var accesstoken = CreateToken(authClaims, model.Audience);
+                var refreshToken = GenerateRefreshToken();
 
+                user.LastAudience = model.Audience;
                 user.RefreshToken = refreshToken;
-                user.RefreshTokenExpiryTime = DateTime.Now.AddDays(_tokenService.GetRefreshTokenValidityDays());
+                user.RefreshTokenExpiryTime = DateTime.Now.AddDays(GetRefreshTokenValidityDays());
 
                 await _userManager.UpdateAsync(user);
 
@@ -118,9 +119,10 @@ namespace api.travispwalker.Controllers
                 return BadRequest("Invalid refresh token");
             }
 
-            var newAccessToken = _tokenService.CreateToken(principal.Claims.ToList(), audience);
-            var newRefreshToken = _tokenService.GenerateRefreshToken();
+            var newAccessToken = CreateToken(principal.Claims.ToList(), audience);
+            var newRefreshToken = GenerateRefreshToken();
 
+            user.LastAudience = tokenModel.Audience;
             user.RefreshToken = newRefreshToken;
             await _userManager.UpdateAsync(user);
 
@@ -145,7 +147,7 @@ namespace api.travispwalker.Controllers
             string? refreshToken = tokenModel.RefreshToken;
             string? audience = tokenModel.Audience;
 
-            var principal = _tokenService.GetPrincipalFromExpiredToken(accessToken);
+            var principal = _tokenService.GetPrincipalFromToken(accessToken, false, false);
             if (principal == null)
             {
                 return BadRequest("Invalid access token or refresh token");
@@ -154,15 +156,17 @@ namespace api.travispwalker.Controllers
             string? username = principal.Identity?.Name;
 
             var user = await _userManager.FindByNameAsync(username == null ? "" : username);
+            var audienceToken = await _userManager.GetUserTokenForAudience(user, tokenModel.Audience);
 
-            if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
+            if (user == null || audienceToken?.RefreshToken != refreshToken || audienceToken?.RefreshTokenExpiryTime <= DateTime.Now)
             {
                 return BadRequest("Invalid access token or refresh token");
             }
 
-            var newAccessToken = _tokenService.CreateToken(principal.Claims.ToList(), audience);
-            var newRefreshToken = _tokenService.GenerateRefreshToken();
+            var newAccessToken = CreateToken(principal.Claims.ToList(), audience);
+            var newRefreshToken = GenerateRefreshToken();
 
+            user.LastAudience = tokenModel.Audience;
             user.RefreshToken = newRefreshToken;
             await _userManager.UpdateAsync(user);
 
@@ -191,8 +195,7 @@ namespace api.travispwalker.Controllers
             else
             {
                 return StatusCode(403);
-            }
-            
+            }            
         }
 
         [Authorize]
@@ -233,6 +236,44 @@ namespace api.travispwalker.Controllers
         }
 
 
+        private JwtSecurityToken CreateToken(List<Claim> authClaims, string audience)
+        {
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("JWT:Secret")));
+            _ = int.TryParse(_configuration.GetValue<string>("JWT:ValidMinutes"), out int tokenValidityInMinutes);
+
+            //remove old aud claims which will now be duplicates..
+            var audClaims = authClaims.Where(a => a.Type == "aud").ToList();
+            foreach(var claim in audClaims)
+            {
+                authClaims.Remove(claim);
+            }
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration.GetValue<string>("JWT:Issuer"),
+                audience: audience,
+                expires: DateTime.Now.AddMinutes(tokenValidityInMinutes),
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+                );
+
+            return token;
+        }
+
+
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
+
+        private int GetRefreshTokenValidityDays()
+        {
+            int days = 0;
+            int.TryParse(_configuration.GetValue<string>("JWT:RefreshTokenValidityInDays"), out days);
+            return days;
+        }
 
     }
 }

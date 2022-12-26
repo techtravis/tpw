@@ -25,7 +25,7 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
     public class ExternalLoginModel : PageModel
     {
         private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly IUserStore<Library.Database.Auth.SecureUser> _userStore;
         private readonly IUserEmailStore<Library.Database.Auth.SecureUser> _emailStore;
         private readonly IEmailSender _emailSender;
@@ -33,7 +33,7 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
 
         public ExternalLoginModel(
             SignInManager<Library.Database.Auth.SecureUser> signInManager,
-            UserManager<Library.Database.Auth.SecureUser> userManager,
+            UserManagerExtension userManager,
             IUserStore<Library.Database.Auth.SecureUser> userStore,
             ILogger<ExternalLoginModel> logger,
             IEmailSender emailSender)

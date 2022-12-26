@@ -14,14 +14,14 @@ namespace api.travispwalker.Controllers
     [ApiController]
     public class InterviewController : Controller
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly ITokenService _tokenService;
         private readonly ApplicationDbContext _applicationDbContext;
 
         public InterviewController(
-           UserManager<Library.Database.Auth.SecureUser> userManager,
+           UserManagerExtension userManager,
            RoleManager<IdentityRole> roleManager,
            IConfiguration configuration,
            ITokenService tokenService,

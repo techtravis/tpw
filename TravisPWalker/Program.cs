@@ -22,11 +22,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 // For Asp.net Identity
 builder.Services.AddIdentity<SecureUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddUserManager<UserManagerExtension>()
     .AddDefaultUI()
     .AddDefaultTokenProviders();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddSession();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(90);
+});
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
@@ -53,9 +57,9 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ClockSkew = TimeSpan.FromSeconds(60),
-        ValidAudiences = configuration.GetSection("JWT:ValidAudiences").Get<string[]>(),
-        ValidIssuers = configuration.GetSection("JWT:ValidIssuers").Get<string[]>(),
+        ClockSkew = TimeSpan.FromMinutes(1),
+        ValidAudiences = configuration["JWT:ValidAudiences"].Split(','),
+        ValidIssuer = configuration["JWT:ValidIssuer"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
     };
 });
@@ -69,7 +73,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        var userManager = services.GetRequiredService<UserManager<Library.Database.Auth.SecureUser>>();
+        var userManager = services.GetRequiredService<UserManagerExtension>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         await Seeder.SeedRolesAsync(userManager, roleManager);
         await Seeder.SeedRoleClaimsAsync(userManager, roleManager);

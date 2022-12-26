@@ -14,12 +14,12 @@ namespace TravisPWalker.Areas.Identity.Pages.Account.Manage
 {
     public class TwoFactorAuthenticationModel : PageModel
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
         private readonly ILogger<TwoFactorAuthenticationModel> _logger;
 
         public TwoFactorAuthenticationModel(
-            UserManager<Library.Database.Auth.SecureUser> userManager, SignInManager<Library.Database.Auth.SecureUser> signInManager, ILogger<TwoFactorAuthenticationModel> logger)
+            UserManagerExtension userManager, SignInManager<Library.Database.Auth.SecureUser> signInManager, ILogger<TwoFactorAuthenticationModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;

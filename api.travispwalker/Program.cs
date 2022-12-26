@@ -15,6 +15,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 // For Asp.net Identity
 builder.Services.AddIdentity<SecureUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddUserManager<UserManagerExtension>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IAuthConfigManager, AuthConfigManager>();
@@ -38,11 +39,9 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ClockSkew = TimeSpan.FromSeconds(60),
-        //ValidAudience = configuration["JWT:ValidAudience"],
-        ValidAudiences = configuration.GetSection("JWT:ValidAudiences").Get<string[]>(),
-        ValidIssuers = configuration.GetSection("JWT:ValidIssuers").Get<string[]>(),
-        //ValidIssuer = configuration["JWT:ValidIssuer"],
+        ClockSkew = TimeSpan.FromMinutes(1),
+        ValidAudiences = configuration["JWT:ValidAudiences"].Split(','),
+        ValidIssuer = configuration["JWT:ValidIssuer"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
     };
 });

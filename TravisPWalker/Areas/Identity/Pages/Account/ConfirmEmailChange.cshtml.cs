@@ -16,10 +16,10 @@ namespace TravisPWalker.Areas.Identity.Pages.Account
 {
     public class ConfirmEmailChangeModel : PageModel
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
 
-        public ConfirmEmailChangeModel(UserManager<Library.Database.Auth.SecureUser> userManager, SignInManager<Library.Database.Auth.SecureUser> signInManager)
+        public ConfirmEmailChangeModel(UserManagerExtension userManager, SignInManager<Library.Database.Auth.SecureUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;

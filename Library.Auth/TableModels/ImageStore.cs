@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
 using Library.Database.Auth;
 
-namespace Library.Database.Auth.TableModels
+namespace Library.Database.TableModels
 {
     public class ImageStore
     {
@@ -28,7 +28,7 @@ namespace Library.Database.Auth.TableModels
         [ForeignKey("UploadedBy")]
         public SecureUser SecureUser { get; set; }
 
-        public static string InsertAndProvideId(ApplicationDbContext context, ClaimsPrincipal secureUser, UserManager<Library.Database.Auth.SecureUser> userManager, IFormFile file)
+        public static string InsertAndProvideId(ApplicationDbContext context, ClaimsPrincipal secureUser, UserManagerExtension userManager, IFormFile file)
         {
             if (IsImage(file) && secureUser.Identity != null && secureUser.IsInRole("God"))
             {

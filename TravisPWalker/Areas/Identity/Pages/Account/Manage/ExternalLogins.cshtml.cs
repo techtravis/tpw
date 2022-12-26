@@ -17,12 +17,12 @@ namespace TravisPWalker.Areas.Identity.Pages.Account.Manage
 {
     public class ExternalLoginsModel : PageModel
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly SignInManager<Library.Database.Auth.SecureUser> _signInManager;
         private readonly IUserStore<Library.Database.Auth.SecureUser> _userStore;
 
         public ExternalLoginsModel(
-            UserManager<Library.Database.Auth.SecureUser> userManager,
+            UserManagerExtension userManager,
             SignInManager<Library.Database.Auth.SecureUser> signInManager,
             IUserStore<Library.Database.Auth.SecureUser> userStore)
         {

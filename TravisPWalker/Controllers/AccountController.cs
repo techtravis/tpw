@@ -17,7 +17,7 @@ namespace TravisPWalker.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<Library.Database.Auth.SecureUser> _userManager;
+        private readonly UserManagerExtension _userManager;
         private readonly ITokenService _tokenService;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
@@ -26,7 +26,7 @@ namespace TravisPWalker.Controllers
 
 
         public AccountController(
-            UserManager<Library.Database.Auth.SecureUser> userManager,
+            UserManagerExtension userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             ITokenService tokenService,
@@ -152,8 +152,8 @@ namespace TravisPWalker.Controllers
         [HttpPost]
         public IActionResult Logout(string? returnUrl = null)
         {
-            string? token = HttpContext?.Session.GetString("AccessToken");
-            ClaimsPrincipal? principal = _tokenService.GetPrincipalFromExpiredToken(token);
+            string? token = _httpContextAccessor.HttpContext?.Session.GetString("AccessToken");
+            ClaimsPrincipal? principal = _tokenService.GetPrincipalFromToken(token, false, false);
             if (principal != null)
             {
                 var user = _userManager.FindByNameAsync(principal.Identity?.Name).Result;
