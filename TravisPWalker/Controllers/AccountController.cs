@@ -51,7 +51,14 @@ namespace TravisPWalker.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            return View();
+            LoginModel loginModel = new LoginModel();
+            var cookie = _httpContextAccessor.HttpContext?.Request.Cookies["token"];
+            if (cookie != null)
+            {
+                loginModel.RememberMe= true;
+            }
+
+            return View(loginModel);
         }
 
         [AllowAnonymous]
@@ -205,7 +212,7 @@ namespace TravisPWalker.Controllers
             {
                 AccessToken = token.accessToken,
                 RefreshToken = token.refreshToken,
-                RefreshTokenExpiryTime = token.expiration
+                expires = token.expiration
             };
             var cookieOptions = new CookieOptions();
             cookieOptions.Expires = DateTime.Now.AddDays(1).AddMinutes(5);

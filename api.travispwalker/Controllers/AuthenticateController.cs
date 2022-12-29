@@ -81,12 +81,14 @@ namespace api.travispwalker.Controllers
 
                 await _userManager.UpdateAsync(user);
 
-                return Ok(new
+                var result = Ok(new
                 {
                     AccessToken = new JwtSecurityTokenHandler().WriteToken(accesstoken),
                     RefreshToken = refreshToken,
-                    Expiration = accesstoken.ValidTo
+                    Expiration = accesstoken.ValidTo,
+                    RefreshTokenExpiryTime = user.RefreshTokenExpiryTime,
                 });
+                return result;
             }
             return Unauthorized();
         }
@@ -126,14 +128,18 @@ namespace api.travispwalker.Controllers
 
             user.LastAudience = tokenModel.Audience;
             user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(GetRefreshTokenValidityDays());
             await _userManager.UpdateAsync(user);
 
-            return new ObjectResult(new
+            var result = Ok(new
             {
                 accessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
                 refreshToken = newRefreshToken,
-                Expiration = newAccessToken.ValidTo
+                Expiration = newAccessToken.ValidTo,
+                RefreshTokenExpiryTime = user.RefreshTokenExpiryTime,
             });
+
+            return result;
         }
 
         [HttpPost]
@@ -146,7 +152,7 @@ namespace api.travispwalker.Controllers
             }
 
             string? accessToken = tokenModel.AccessToken;
-            string? refreshToken = tokenModel.RefreshToken;
+            string? refreshToken = tokenModel.RefreshToken?.Replace(" ", "+");
             string? audience = tokenModel.Audience;
 
             var principal = _tokenService.GetPrincipalFromToken(accessToken, false, false);
@@ -170,14 +176,18 @@ namespace api.travispwalker.Controllers
 
             user.LastAudience = tokenModel.Audience;
             user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(GetRefreshTokenValidityDays());
             await _userManager.UpdateAsync(user);
 
-            return new ObjectResult(new
+            var result = Ok(new
             {
                 accessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
                 refreshToken = newRefreshToken,
-                Expiration = newAccessToken.ValidTo
+                Expiration = newAccessToken.ValidTo,
+                RefreshTokenExpiryTime = user.RefreshTokenExpiryTime,
             });
+
+            return result;
         }
 
         [Authorize]

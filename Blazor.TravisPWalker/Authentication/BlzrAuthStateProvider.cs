@@ -4,6 +4,7 @@ using Library.Database.Auth.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Security.Claims;
 using System.Text.Json;
@@ -83,6 +84,17 @@ namespace Blazor.TravisPWalker.Authentication
             }
         }
 
+        /// <summary>
+        /// Oh boy.   So when we get the user session.  The session can be null.  If it is we want to check local storage for a "Cookie"
+        /// And build the session from that if the refresh token on the cookie is valid
+        /// If the user session is not null.  Then we want refresh the token if it has expired...  if this fails because the token is invalid
+        /// Then we need to get the refresh token from the local storage if it is present and try to refresh the token, session, cookie this way
+        /// 
+        /// This in theory should allow the user state to persist between tabs and browser instances.
+        /// So much so that if the user somehow triggers a refresh on one tab or window. The next time the other window has to reauthenticate.
+        /// The local storage in theory should have the most up to date token in the local storage.
+        /// </summary>
+        /// <returns></returns>
         public async Task<TokenViewModel> GetUserSessionAsync()
         {
             try
@@ -92,6 +104,16 @@ namespace Blazor.TravisPWalker.Authentication
                 // if not logged in set to anonymous
                 if (userSession == null)
                 {
+                    TokenViewModel? tvm = await UpdateAuthWithLocalStorageCookie();
+                    if (tvm != null)
+                    {
+                        userSession = new TokenViewModel();
+                        userSession.expiration = tvm.expiration;
+                        userSession.accessToken = tvm.accessToken;
+                        userSession.refreshToken = tvm.refreshToken;
+                        return await Task.FromResult(userSession);
+                    }
+
                     return await Task.FromResult(new TokenViewModel());
                 }
                 else
@@ -125,6 +147,16 @@ namespace Blazor.TravisPWalker.Authentication
                                 userSession.refreshToken = token.refreshToken;
                             }
                         }
+                        else
+                        {
+                            TokenViewModel? tvm =  await UpdateAuthWithLocalStorageCookie();
+                            if(tvm != null)
+                            {
+                                userSession.expiration = tvm.expiration;
+                                userSession.accessToken = tvm.accessToken;
+                                userSession.refreshToken = tvm.refreshToken;
+                            }                            
+                        }
                     }
                 }
 
@@ -145,7 +177,7 @@ namespace Blazor.TravisPWalker.Authentication
                 UserCookieViewModel userCookie = new UserCookieViewModel();
                 userCookie.AccessToken = token.accessToken;
                 userCookie.RefreshToken = token.refreshToken;
-                userCookie.RefreshTokenExpiryTime = token.expiration;
+                userCookie.expires = token.refreshTokenExpiryTime.ToString();
 
                 await _localStorage.SetItemAsync("token", userCookie);
                 await _sessionStorage.SetAsync("UserSession", token);                
@@ -160,6 +192,42 @@ namespace Blazor.TravisPWalker.Authentication
 
             var state = new AuthenticationState(claimsPrincipal == null ? new ClaimsPrincipal() : claimsPrincipal);
             NotifyAuthenticationStateChanged(Task.FromResult(state));            
+        }
+
+        private async Task<TokenViewModel?> UpdateAuthWithLocalStorageCookie()
+        {
+            string? Token = await _localStorage.GetItemAsync<string>("token");
+            UserCookieViewModel? userCookie = JsonSerializer.Deserialize<UserCookieViewModel>(Token);
+
+            string blazorUrl = _configuration.GetValue<string>("URLS:blazor");
+            UserToken userToken = new UserToken() { AccessToken = userCookie?.AccessToken, RefreshToken = userCookie?.RefreshToken, Audience = blazorUrl };
+
+            HttpClient client = new HttpClient();
+
+            string apiUrl = _configuration.GetValue<string>("URLS:api");
+            string usermodel = JsonSerializer.Serialize(userToken);
+            byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(usermodel);
+            var content = new ByteArrayContent(messageBytes);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            var response = client.PostAsync($"{apiUrl}/api/Authenticate/refresh-token", content).Result;
+            string result;
+            if (response.IsSuccessStatusCode)
+            {
+                result = response.Content.ReadAsStringAsync().Result;
+                TokenViewModel? token = JsonSerializer.Deserialize<TokenViewModel>(result);
+                if (token != null)
+                {
+                    if (userCookie == null) { userCookie = new UserCookieViewModel(); }
+                    userCookie.AccessToken = token.accessToken;
+                    userCookie.RefreshToken = token.refreshToken;
+                    userCookie.expires = token.refreshTokenExpiryTime.ToString();
+
+                    await UpdateAuthenticationState(token);
+                    return token;
+                }
+            }
+            return null;
         }
     }
 }

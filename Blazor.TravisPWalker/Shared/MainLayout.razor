@@ -41,51 +41,53 @@
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
-
     //https://www.syncfusion.com/faq/blazor/general/how-do-i-access-browser-local-storage-in-blazor
     public string? Token;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var authState = await authenticationState;
-        var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
-        TokenViewModel tvm = await blzrAuthStateProvider.GetUserSessionAsync();
-
-        //await localStorage.SetItemAsync("ID", "20019");
-        //await localStorage.SetItemAsync("Name", "John Smith");
-        Token = await localStorage.GetItemAsync<string>("token");
-        if (Token != null && tvm.accessToken == null)
+        if (firstRender)
         {
-            UserCookieViewModel? userCookie = JsonSerializer.Deserialize<UserCookieViewModel>(Token);
+            var authState = await authenticationState;
+            var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
+            TokenViewModel tvm = await blzrAuthStateProvider.GetUserSessionAsync();
 
-            string blazorUrl = _configuration.GetValue<string>("URLS:blazor");
-            UserToken userToken = new UserToken() { AccessToken = userCookie?.AccessToken, RefreshToken = userCookie?.RefreshToken, Audience = blazorUrl };
+            ////await localStorage.SetItemAsync("ID", "20019");
+            ////await localStorage.SetItemAsync("Name", "John Smith");
+            //Token = await localStorage.GetItemAsync<string>("token");
+            //if (Token != null && tvm.accessToken == null)
+            //{
+            //    UserCookieViewModel? userCookie = JsonSerializer.Deserialize<UserCookieViewModel>(Token);
 
-            HttpClient client = new HttpClient();
+            //    string blazorUrl = _configuration.GetValue<string>("URLS:blazor");
+            //    UserToken userToken = new UserToken() { AccessToken = userCookie?.AccessToken, RefreshToken = userCookie?.RefreshToken, Audience = blazorUrl };
 
-            string apiUrl = _configuration.GetValue<string>("URLS:api");
-            string usermodel = JsonSerializer.Serialize(userToken);
-            byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(usermodel);
-            var content = new ByteArrayContent(messageBytes);
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+            //    HttpClient client = new HttpClient();
 
-            var response = client.PostAsync($"{apiUrl}/api/Authenticate/refresh-token", content).Result;
-            string result;
-            if (response.IsSuccessStatusCode)
-            {
-                result = response.Content.ReadAsStringAsync().Result;
-                TokenViewModel? token = JsonSerializer.Deserialize<TokenViewModel>(result);
-                if (token != null)
-                {
-                    if (userCookie == null){ userCookie = new UserCookieViewModel(); }
-                    userCookie.AccessToken = token.accessToken;
-                    userCookie.RefreshToken = token.refreshToken;
-                    userCookie.RefreshTokenExpiryTime = token.expiration;
+            //    string apiUrl = _configuration.GetValue<string>("URLS:api");
+            //    string usermodel = JsonSerializer.Serialize(userToken);
+            //    byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(usermodel);
+            //    var content = new ByteArrayContent(messageBytes);
+            //    content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
-                    await localStorage.SetItemAsync("token", userCookie);
-                    await blzrAuthStateProvider.UpdateAuthenticationState(token);
-                    //navManager.NavigateTo("/", true);
-                }
-            }
+            //    var response = client.PostAsync($"{apiUrl}/api/Authenticate/refresh-token", content).Result;
+            //    string result;
+            //    if (response.IsSuccessStatusCode)
+            //    {
+            //        result = response.Content.ReadAsStringAsync().Result;
+            //        TokenViewModel? token = JsonSerializer.Deserialize<TokenViewModel>(result);
+            //        if (token != null)
+            //        {
+            //            if (userCookie == null) { userCookie = new UserCookieViewModel(); }
+            //            userCookie.AccessToken = token.accessToken;
+            //            userCookie.RefreshToken = token.refreshToken;
+            //            userCookie.expires = token.refreshTokenExpiryTime.ToString();
+
+            //            await blzrAuthStateProvider.UpdateAuthenticationState(token);
+            //            //navManager.NavigateTo("/", true);
+            //        }
+            //    }
+            //}
         }
+        
     }
 }

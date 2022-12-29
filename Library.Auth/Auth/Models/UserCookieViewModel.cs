@@ -10,7 +10,7 @@ namespace Library.Database.Auth.Models
     {
         public string? AccessToken { get; set; }
         public string? RefreshToken { get; set; }
-        public string? RefreshTokenExpiryTime { get; set; }
+        public string? expires { get; set; }
 
         public UserCookieViewModel()
         {
