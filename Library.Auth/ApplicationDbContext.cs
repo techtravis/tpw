@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Library.Database.Auth
 {
-    public class ApplicationDbContext : IdentityDbContext<Library.Database.Auth.SecureUser>
+    public class ApplicationDbContext : IdentityDbContext<SecureUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
