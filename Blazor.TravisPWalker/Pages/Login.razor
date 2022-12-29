@@ -91,9 +91,9 @@
                             {
                                 AccessToken = token.accessToken,
                                 RefreshToken = token.refreshToken,
-                                RefreshTokenExpiryTime = token.expiration
+                                expires = token.refreshTokenExpiryTime.ToString()
                             };
-                        await localStorage.SetItemAsync("token", userCookie);
+
                         await blzrAuthStateProvider.UpdateAuthenticationState(token);
                         navManager.NavigateTo("/", true);                        
                     }
@@ -132,9 +132,8 @@
                     {
                         AccessToken = token.accessToken,
                         RefreshToken = token.refreshToken,
-                        RefreshTokenExpiryTime = token.expiration
+                        expires = token.refreshTokenExpiryTime.ToString()
                     };
-                    await localStorage.SetItemAsync("token", userCookie);
 
                     var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
                     await blzrAuthStateProvider.UpdateAuthenticationState(token);

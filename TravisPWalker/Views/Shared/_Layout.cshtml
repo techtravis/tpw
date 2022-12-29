@@ -71,7 +71,7 @@
                                 {
                                     AccessToken = token.accessToken,
                                     RefreshToken = token.refreshToken,
-                                    RefreshTokenExpiryTime = token.expiration
+                                    expires = token.expiration
                                 };
                         var cookieOptions = new CookieOptions();
                         cookieOptions.Expires = DateTime.Now.AddDays(1).AddMinutes(5);

@@ -2,8 +2,10 @@
 {
     public class TokenViewModel
     {
-        public string accessToken { get; set; }
-        public string refreshToken { get; set; }
-        public string expiration { get; set; }
+        public string? accessToken { get; set; }
+        public string? refreshToken { get; set; }
+        public string? expiration { get; set; }
+        public DateTime? refreshTokenExpiryTime { get; set; }
+
     }
 }
