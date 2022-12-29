@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using System;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -83,6 +84,13 @@ namespace TravisPWalker.Controllers
                         _httpContextAccessor.HttpContext?.Session.Set("AccessToken", Encoding.ASCII.GetBytes(token.accessToken));
                         _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(token.refreshToken));
                         _httpContextAccessor.HttpContext?.Session.Set("RefreshTokenExpiryTime", Encoding.ASCII.GetBytes(token.expiration));
+
+                        var cookie = _httpContextAccessor.HttpContext?.Request.Cookies["token"];
+                        if (cookie != null)
+                        {
+                            SetTokenCookie(token);
+                        }
+
                         return Redirect(redirectURL);
                     }
                 }
@@ -103,6 +111,12 @@ namespace TravisPWalker.Controllers
                     _httpContextAccessor.HttpContext?.Session.Set("AccessToken", Encoding.ASCII.GetBytes(tokenModel.accessToken));
                     _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(tokenModel.refreshToken));
                     _httpContextAccessor.HttpContext?.Session.Set("RefreshTokenExpiryTime", Encoding.ASCII.GetBytes(tokenModel.expiration));
+
+                    var cookie = _httpContextAccessor.HttpContext?.Request.Cookies["token"];
+                    if (cookie != null)
+                    {
+                        SetTokenCookie(tokenModel);
+                    }
 
                     if (String.IsNullOrEmpty(redirectURL))
                     {
@@ -140,6 +154,12 @@ namespace TravisPWalker.Controllers
                         _httpContextAccessor.HttpContext?.Session.Set("AccessToken", Encoding.ASCII.GetBytes(token.accessToken));
                         _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(token.refreshToken));
                         _httpContextAccessor.HttpContext?.Session.Set("RefreshTokenExpiryTime", Encoding.ASCII.GetBytes(token.expiration));
+
+                        if (userModel.RememberMe)
+                        {
+                            SetTokenCookie(token);
+                        }
+
                         return RedirectToAction("SecureLanding", "Home");
                     }                    
                 }                
@@ -164,6 +184,7 @@ namespace TravisPWalker.Controllers
 
                 _httpContextAccessor.HttpContext?.Session.Set("AccessToken", Encoding.ASCII.GetBytes(""));
                 _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(""));
+                _httpContextAccessor.HttpContext?.Response.Cookies.Delete("token");
             }
 
             if (returnUrl != null)
@@ -178,6 +199,18 @@ namespace TravisPWalker.Controllers
             }
         }
 
+        private void SetTokenCookie(TokenViewModel token)
+        {
+            UserCookieViewModel userCookie = new UserCookieViewModel()
+            {
+                AccessToken = token.accessToken,
+                RefreshToken = token.refreshToken,
+                RefreshTokenExpiryTime = token.expiration
+            };
+            var cookieOptions = new CookieOptions();
+            cookieOptions.Expires = DateTime.Now.AddDays(1).AddMinutes(5);
+            Response.Cookies.Append("token", JsonSerializer.Serialize<UserCookieViewModel>(userCookie), cookieOptions);
+        }
 
     }
 }

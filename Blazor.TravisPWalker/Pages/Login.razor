@@ -3,6 +3,7 @@
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager navManager
 @inject IConfiguration _configuration
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 
 <AuthorizeView>
@@ -86,6 +87,13 @@
                     TokenViewModel? token = JsonSerializer.Deserialize<TokenViewModel>(result);
                     if (token != null)
                     {
+                        UserCookieViewModel userCookie = new UserCookieViewModel()
+                            {
+                                AccessToken = token.accessToken,
+                                RefreshToken = token.refreshToken,
+                                RefreshTokenExpiryTime = token.expiration
+                            };
+                        await localStorage.SetItemAsync("token", userCookie);
                         await blzrAuthStateProvider.UpdateAuthenticationState(token);
                         navManager.NavigateTo("/", true);                        
                     }
@@ -116,10 +124,18 @@
             string result;
             if (response.IsSuccessStatusCode)
             {
-                result = response.Content.ReadAsStringAsync().Result;
+                result = response.Content.ReadAsStringAsync().Result;                
                 TokenViewModel? token = JsonSerializer.Deserialize<TokenViewModel>(result);
                 if (token != null)
                 {
+                    UserCookieViewModel userCookie = new UserCookieViewModel()
+                    {
+                        AccessToken = token.accessToken,
+                        RefreshToken = token.refreshToken,
+                        RefreshTokenExpiryTime = token.expiration
+                    };
+                    await localStorage.SetItemAsync("token", userCookie);
+
                     var blzrAuthStateProvider = (BlzrAuthStateProvider)authStateProvider;
                     await blzrAuthStateProvider.UpdateAuthenticationState(token);
                     navManager.NavigateTo("/", true);

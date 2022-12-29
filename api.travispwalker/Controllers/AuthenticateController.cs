@@ -104,7 +104,9 @@ namespace api.travispwalker.Controllers
             string? refreshToken = tokenModel.RefreshToken;
             string? audience = tokenModel.Audience;
 
-            var principal = _tokenService.GetPrincipalFromToken(accessToken, false);
+            // This is a new audience,  don't want to validate the audience or expiration
+            // We will however check the refresh token expiration time to make sure that is still active.
+            var principal = _tokenService.GetPrincipalFromToken(accessToken);
             if (principal == null)
             {
                 return BadRequest("Invalid access token or refresh token");
@@ -180,7 +182,7 @@ namespace api.travispwalker.Controllers
 
         [Authorize]
         [HttpPost]
-        [Route("revoke/{username}")]
+        [Route("revoke")]
         public async Task<IActionResult> Revoke(string username)
         {
             if (User.IsInRole("God") || User.Identity?.Name == username)

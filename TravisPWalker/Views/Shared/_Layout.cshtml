@@ -13,6 +13,8 @@
     // I recognize this is a hack.. and once I figure out a better way to replace it I will.
     // Basically if we have a token is within 15 minutes of expiring. We will refresh it so it does not expire
     // I have tokens set to a 30 minute timeout window
+
+    // see if we have a valid session and User
     string? refreshToken = _httpContextAccessor.HttpContext?.Session?.GetString("RefreshToken");
     string? exp = User.Claims.Where(c => c.Type == "exp").SingleOrDefault()?.Value;
     int tokenEpoch;
@@ -22,13 +24,25 @@
     TimeSpan t = DateTime.UtcNow - new DateTime(1970, 1, 1);
     int currentEpoch = (int)t.TotalSeconds;
 
-    if(tokenEpoch > 0 && currentEpoch > tokenEpoch && !String.IsNullOrEmpty(refreshToken))
+    var cookie = _httpContextAccessor.HttpContext?.Request.Cookies["token"];
+    if ((tokenEpoch > 0 && currentEpoch > tokenEpoch && !String.IsNullOrEmpty(refreshToken)) || (String.IsNullOrEmpty(refreshToken) && cookie != null))
     {
         // need to try to refresh the token!
+        // if the session token is empty lets grab it from the cookie if it exists.
         UserToken tokenModel = new UserToken();
-        tokenModel.AccessToken = _httpContextAccessor.HttpContext?.Session?.GetString("AccessToken");
-        tokenModel.RefreshToken = _httpContextAccessor.HttpContext?.Session?.GetString("RefreshToken");
+        if(String.IsNullOrEmpty(refreshToken) && cookie != null)
+        {
+            UserCookieViewModel? userCookie = JsonSerializer.Deserialize<UserCookieViewModel>(cookie);
+            tokenModel.AccessToken = userCookie?.AccessToken;
+            tokenModel.RefreshToken = userCookie?.RefreshToken;
+        }
+        else
+        {
+            tokenModel.AccessToken = _httpContextAccessor.HttpContext?.Session?.GetString("AccessToken");
+            tokenModel.RefreshToken = _httpContextAccessor.HttpContext?.Session?.GetString("RefreshToken");            
+        }
         tokenModel.Audience = _configuration.GetValue<string>("JWT:Audience");
+
         if (tokenModel.AccessToken != null && tokenModel.RefreshToken != null)
         {
             HttpClient client = new HttpClient();
@@ -50,6 +64,26 @@
                     _httpContextAccessor.HttpContext?.Session.Set("AccessToken", Encoding.ASCII.GetBytes(token.accessToken));
                     _httpContextAccessor.HttpContext?.Session.Set("RefreshToken", Encoding.ASCII.GetBytes(token.refreshToken));
                     _httpContextAccessor.HttpContext?.Session.Set("RefreshTokenExpiryTime", Encoding.ASCII.GetBytes(token.expiration));
+
+                    if(cookie != null)
+                    {
+                        UserCookieViewModel userCookie = new UserCookieViewModel()
+                                {
+                                    AccessToken = token.accessToken,
+                                    RefreshToken = token.refreshToken,
+                                    RefreshTokenExpiryTime = token.expiration
+                                };
+                        var cookieOptions = new CookieOptions();
+                        cookieOptions.Expires = DateTime.Now.AddDays(1).AddMinutes(5);
+                        _httpContextAccessor.HttpContext?.Response.Cookies.Append("token", JsonSerializer.Serialize<UserCookieViewModel>(userCookie), cookieOptions);
+                    }
+
+                    // if the identity is null lets reload the page they were on to refresh the auth state to be able to show the user
+                    if(User.Identity.Name == null)
+                    {
+                        string url = _httpContextAccessor.HttpContext?.Request.Path;
+                        _httpContextAccessor.HttpContext?.Response.Redirect($"{url}");
+                    }
                 }
             }
         }

@@ -2,7 +2,7 @@
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager navManager
 @inject IConfiguration _configuration
-
+@inject IJSRuntime js
 
 <div class="container h-100">
     <div class="d-flex justify-content-md-center align-items-center vh-100">
@@ -41,10 +41,10 @@
                     result = response.Content.ReadAsStringAsync().Result;
                 }
 
-                navManager.NavigateTo($"{coreUrl}/Account/TokenAccess?token={result}&redirectURL=");
-                return base.OnAfterRenderAsync(firstRender);
+                // we do not want to await this as we want the page to navigate away.
+                js.InvokeAsync<object>("open", $"{coreUrl}/Account/TokenAccess?token={result}&redirectURL=", "_core");
+                navManager.NavigateTo($"/", true);
             }
-            return base.OnAfterRenderAsync(firstRender);
         }
         return base.OnAfterRenderAsync(firstRender);
 

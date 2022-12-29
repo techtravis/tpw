@@ -4,6 +4,7 @@
 @inject NavigationManager navManager
 @inject IConfiguration _configuration
 @inject ITokenService _tokenService
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 <h3>Logout</h3>
 
@@ -27,13 +28,12 @@
                 var content = new ByteArrayContent(messageBytes);
                 content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
-                var response = await client.PostAsync($"{apiUrl}/api/revoke/{username}", content);
+                var response = await client.PostAsync($"{apiUrl}/api/Authenticate/revoke?username={username}", content);
                 if (response.IsSuccessStatusCode)
                 {
-                    // do we need to do anything?
+                    await localStorage.ClearAsync();
                 }
-            }
-            
+            }            
         }
 
         await blzrAuthStateProvider.UpdateAuthenticationState(null);

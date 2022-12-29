@@ -114,13 +114,11 @@
             else
             {
                 Console.WriteLine("Internal server Error");
-            }
-
-
-            loadingQuestion = false;
-            this.StateHasChanged();
-            await Task.Delay(100);
+            }           
         }
+        loadingQuestion = false;
+        this.StateHasChanged();
+        await Task.Delay(100);
         await jsRuntime.InvokeVoidAsync("collapseLinkOnClick");
     }
 

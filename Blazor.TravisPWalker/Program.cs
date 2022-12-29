@@ -1,5 +1,6 @@
 using Blazor.TravisPWalker.Authentication;
 using Blazor.TravisPWalker.Data;
+using Blazored.LocalStorage;
 using Library.Database.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components;
@@ -29,6 +30,7 @@ builder.Services.AddIdentity<SecureUser, IdentityRole>()
 builder.Services.AddAuthenticationCore();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSingleton<IAuthConfigManager, AuthConfigManager>();
 builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddScoped<ProtectedSessionStorage>();
